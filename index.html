@@ -18,24 +18,16 @@
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
   body{
-    margin:0;
-    background:var(--asphalt);
+    margin:0; background:var(--asphalt);
     background-image:
       radial-gradient(circle at 15% 10%, rgba(244,163,0,0.06), transparent 40%),
       radial-gradient(circle at 85% 90%, rgba(230,57,70,0.07), transparent 40%);
-    color:var(--off-white);
-    font-family:'Tahoma','Segoe UI',sans-serif;
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:18px;
+    color:var(--off-white); font-family:'Tahoma','Segoe UI',sans-serif; min-height:100vh;
+    display:flex; align-items:center; justify-content:center; padding:18px;
     padding-top:calc(env(safe-area-inset-top, 0px) + 28px);
     transition: background 0.3s ease;
   }
-  body.time-warning {
-    animation: flashRed 0.6s infinite alternate;
-  }
+  body.time-warning { animation: flashRed 0.6s infinite alternate; }
   @keyframes flashRed {
     0% { background-color: var(--asphalt); }
     100% { background-color: #4a0d13; }
@@ -46,19 +38,28 @@
     background-image: repeating-linear-gradient(45deg, var(--off-white) 0 8px, var(--asphalt-2) 8px 16px);
     opacity:0.9;
   }
-  h1.title{
-    font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:28px; text-align:center; margin:0 0 4px;
-  }
+  h1.title{ font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:28px; text-align:center; margin:0 0 4px; }
   .title span{ color:var(--amber); }
   .subtitle{ text-align:center; color:#9a9ba5; font-size:13px; margin-bottom:22px; }
   .card{
     background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:22px; margin-bottom:16px; box-shadow:0 10px 30px rgba(0,0,0,0.35);
   }
-  label{ display:block; font-size:13px; color:#b7b8c2; margin-bottom:6px; font-weight:600; }
-  input[type=text], select{
+  label{ display:block; font-size:14px; color:#b7b8c2; margin-bottom:8px; font-weight:700; }
+  
+  /* Large Mode Selection Cards */
+  .mode-select-box {
+    background: var(--asphalt-2); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .mode-select-box.active {
+    border-color: var(--amber); background: rgba(244,163,0,0.08);
+  }
+  .mode-title { font-weight: 900; font-size: 18px; color: var(--off-white); display: flex; align-items: center; justify-content: space-between; }
+  .mode-desc { font-size: 12px; color: #9a9ba5; margin-top: 6px; line-height: 1.4; }
+
+  select{
     width:100%; background:var(--asphalt-2); border:1px solid var(--line); color:var(--off-white); padding:12px 14px; border-radius:10px; font-family:'Tahoma','Segoe UI',sans-serif; font-size:15px; margin-bottom:16px; outline:none;
   }
-  input[type=text]:focus, select:focus{ border-color:var(--amber); }
+  select:focus{ border-color:var(--amber); }
   .row{ display:flex; gap:10px; }
   .row > div{ flex:1; }
   .btn{
@@ -84,27 +85,34 @@
   .reveal-box{
     background:var(--asphalt-2); border:2px dashed var(--line); border-radius:14px; padding:24px 18px; text-align:center; cursor:pointer; margin-bottom:18px; user-select:none;
   }
-  .reveal-box .word{ font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:28px; color:var(--off-white); }
+  .reveal-box .word{ font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:30px; color:var(--off-white); }
+  .reveal-box .tap-label{ color:#8a8b96; font-size:14px; margin-top:6px; }
+
   .forbidden-list { margin-top: 15px; background: rgba(230,57,70,0.15); border: 1px solid var(--racing-red); border-radius: 8px; padding: 10px; }
   .forbidden-title { color: var(--racing-red); font-weight: 700; font-size: 12px; margin-bottom: 6px; }
   .forbidden-words { color: var(--off-white); font-weight: bold; font-size: 14px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
   .forbidden-tag { background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 6px; }
 
-  .score-board{ display:flex; justify-content:space-between; background:var(--asphalt-2); border-radius:12px; padding:12px 16px; margin-bottom:16px; }
+  .score-board{ display:flex; justify-content:space-between; background:var(--asphalt-2); border-radius:12px; padding:12px 16px; margin-bottom:16px; font-family:'Segoe UI','Tahoma',sans-serif; }
   .score-board .team{ text-align:center; flex:1; }
+  .score-board .team .name{ font-size:12px; color:#9a9ba5; }
   .score-board .team .pts{ font-size:22px; font-weight:900; }
   .score-board .divider{ width:1px; background:var(--line); }
 
-  .timer-display{ text-align:center; font-family:'Consolas','Courier New',monospace; font-weight:900; font-size:56px; color:var(--go-green); line-height:1; }
+  .timer-display{ text-align:center; font-family:'Consolas','Courier New',monospace; font-weight:900; font-size:56px; color:var(--go-green); line-height:1; margin-bottom:6px; }
   .timer-caption{ text-align:center; font-size:11px; color:#9a9ba5; margin-bottom:14px; }
+  .hint-badge{ text-align:center; font-family:'Consolas','Courier New',monospace; font-weight:700; font-size:13px; color:var(--amber); margin-bottom:8px; }
+
+  .steal-banner{ text-align:center; font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:18px; color:var(--go-green); background:rgba(58,170,53,0.12); border:1px solid rgba(58,170,53,0.35); border-radius:12px; padding:14px; margin-bottom:14px; }
+  .result-banner{ text-align:center; font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:20px; padding:14px; border-radius:12px; margin-bottom:16px; }
+  .result-banner.win{ background:rgba(58,170,53,0.15); color:var(--go-green); border:1px solid rgba(58,170,53,0.4); }
 
   .hidden{ display:none !important; }
-  .result-banner{ text-align:center; font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:18px; padding:14px; border-radius:12px; margin-bottom:16px; }
-  .result-banner.win{ background:rgba(58,170,53,0.15); color:var(--go-green); border:1px solid rgba(58,170,53,0.4); }
-  .result-banner.tie{ background:rgba(244,163,0,0.15); color:var(--amber); border:1px solid rgba(244,163,0,0.4); }
-
-  .wheel{ width:220px; height:220px; border-radius:50%; background: conic-gradient(var(--racing-red) 0deg 180deg, var(--go-green) 180deg 360deg); position:relative; transition: transform 3.2s cubic-bezier(.12,.67,.10,1); border:5px solid var(--asphalt-2); }
+  .wheel{ width:240px; height:240px; border-radius:50%; background: conic-gradient(var(--racing-red) 0deg 180deg, var(--go-green) 180deg 360deg); position:relative; transition: transform 3.2s cubic-bezier(.12,.67,.10,1); border:5px solid var(--asphalt-2); }
   .wheel-pointer{ width:0; height:0; border-left:14px solid transparent; border-right:14px solid transparent; border-top:22px solid var(--amber); margin:0 auto -2px; position:relative; z-index:2; }
+  .wheel-label{ position:absolute; top:50%; width:78px; text-align:center; font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:13px; color:white; transform: translateY(-50%); }
+  .wheel-label.a{ right:10px; }
+  .wheel-label.b{ left:10px; }
 </style>
 </head>
 <body>
@@ -114,27 +122,34 @@
   <!-- SETUP SCREEN -->
   <div id="screen-setup">
     <h1 class="title">مجموعة ألعاب <span>كلمة 🎤</span></h1>
-    <div class="subtitle">اختر طور اللعب، تحدّى ربعك، واجمع النقاط!</div>
+    <div class="subtitle">اختر اللعبة، فكر بالتلميح، واجمع النقاط!</div>
 
     <div class="card">
-      <label>طور اللعب (Game Mode)</label>
-      <select id="gameMode">
-        <option value="classic" selected>🎤 كلمة (شرح بالتلميحات)</option>
-        <option value="charades">🤐 ولا كلمة (تمثيل بالحركات فقط)</option>
-        <option value="taboo">🚫 لا تقولها (كلمات محظورة)</option>
-      </select>
+      <label>اختر نوع اللعبة:</label>
+      
+      <!-- Mode 1: Classic -->
+      <div class="mode-select-box active" onclick="selectMode('classic', this)">
+        <div class="mode-title">🎤 طور كلمة التقليدي <span>أساسي</span></div>
+        <div class="mode-desc">تشرح الكلمة لفريقك عن طريق إعطاء تلميحات بالكلمات فقط. عندك 3 محاولات، والسرعة تعطيك نقاط أكثر!</div>
+      </div>
 
-      <label>اسم الفريق الأول</label>
-      <input type="text" id="teamA" placeholder="الفريق الأحمر" maxlength="16">
+      <!-- Mode 2: Charades -->
+      <div class="mode-select-box" onclick="selectMode('charades', this)">
+        <div class="mode-title">🤐 طور ولا كلمة <span>تمثيل</span></div>
+        <div class="mode-desc">ممنوع تتكلم أو تطلع أي صوت تماماً! تشرح الكلمة لفريقك بالإشارات والحركات فقط خلال الوقت المحدد.</div>
+      </div>
 
-      <label>اسم الفريق الثاني</label>
-      <input type="text" id="teamB" placeholder="الفريق الأخضر" maxlength="16">
+      <!-- Mode 3: Taboo -->
+      <div class="mode-select-box" onclick="selectMode('taboo', this)">
+        <div class="mode-title">🚫 طور لا تقولها <span>محظور</span></div>
+        <div class="mode-desc">تطلع لك الكلمة وتحتها 4 كلمات محظورة! لازم تشرح الكلمة بدون ما تذكر أي كلمة من الكلمات المحظورة.</div>
+      </div>
 
-      <div class="row">
+      <div class="row" style="margin-top:16px;">
         <div>
           <label>التصنيف</label>
           <select id="category">
-            <option value="cars">سيارات 🏎️</option>
+            <option value="cars">سيارات وسباقات 🏎️</option>
             <option value="football">كرة قدم ⚽</option>
             <option value="girls">بنات 💅</option>
             <option value="general">عام 🎲</option>
@@ -165,12 +180,15 @@
   <!-- WHEEL SCREEN -->
   <div id="screen-wheel" class="hidden">
     <div class="card" style="text-align:center;">
-      <h1 class="title">🎡 قرعة البداية</h1>
-      <div class="subtitle">دز على العجلة عشان تشوف منو يلعب أول</div>
+      <h1 class="title" style="margin-bottom:4px;">🎡 قرعة البداية</h1>
+      <div class="subtitle" style="margin-bottom:22px;">دز على العجلة عشان تشوف منو يلعب أول</div>
 
-      <div style="position:relative; width:220px; margin:0 auto 22px;">
+      <div style="position:relative; width:240px; margin:0 auto 22px;">
         <div class="wheel-pointer"></div>
-        <div class="wheel" id="wheel"></div>
+        <div class="wheel" id="wheel">
+          <div class="wheel-label a">الفريق الأحمر</div>
+          <div class="wheel-label b">الفريق الأخضر</div>
+        </div>
       </div>
 
       <button class="btn btn-primary" id="spinBtn" onclick="spinWheel()">🎡 دز واقلب العجلة</button>
@@ -186,9 +204,9 @@
   <div id="screen-play" class="hidden">
     <div class="lap" id="lapLabel">الجولة 1 / 7</div>
     <div class="score-board">
-      <div class="team"><div id="sbNameA" style="font-size:12px; color:#9a9ba5;"></div><div class="pts" id="sbPtsA" style="color:var(--racing-red)">0</div></div>
+      <div class="team"><div class="name">الفريق الأحمر</div><div class="pts" id="sbPtsA" style="color:var(--racing-red)">0</div></div>
       <div class="divider"></div>
-      <div class="team"><div id="sbNameB" style="font-size:12px; color:#9a9ba5;"></div><div class="pts" id="sbPtsB" style="color:var(--go-green)">0</div></div>
+      <div class="team"><div class="name">الفريق الأخضر</div><div class="pts" id="sbPtsB" style="color:var(--go-green)">0</div></div>
     </div>
 
     <div class="card">
@@ -196,28 +214,52 @@
       <div class="timer-display" id="timerDisplay">30</div>
       <div class="timer-caption" id="timerCaption">ثانية متبقية</div>
 
-      <div class="team-turn" id="turnLabel">دور الفريق الأول</div>
+      <div class="team-turn" id="turnLabel">دور الفريق الأحمر</div>
 
-      <!-- HINT & PLAY AREA -->
-      <div id="hintArea">
-        <div class="hint" id="turnHint">اضغط واكشف الكلمة (بس أنت اللي يشوفها! 🤫)</div>
+      <!-- PREVIEW AREA (30 SECONDS THINKING) -->
+      <div id="previewArea">
+        <div class="hint" style="margin-bottom:10px;">هذي كلمتكم، فكروا شلون تلمحون عليها 🧠</div>
+        <div class="reveal-box" onpointerdown="revealPreviewWord()" onpointerup="hidePreviewWord()" onpointerleave="hidePreviewWord()">
+          <div class="word" id="previewWordDisplay">🔒 اضغط هنا</div>
+        </div>
+        <button class="btn btn-amber" onclick="skipPreview()" style="margin-top:16px;">🚀 جاهزين، ابدأ</button>
+      </div>
 
-        <div class="reveal-box" id="revealBox" onpointerdown="revealWord()" onpointerup="hideWord()" onpointerleave="hideWord()">
+      <!-- HINT AREA -->
+      <div id="hintArea" class="hidden">
+        <div class="hint-badge" id="hintBadge">التلميح 1 / 3</div>
+        <div class="hint" id="hintInstr">اضغط واكشف الكلمة (بس أنت اللي يشوفها! 🤫)</div>
+
+        <div class="reveal-box" onpointerdown="revealWord()" onpointerup="hideWord()" onpointerleave="hideWord()">
           <div class="word" id="wordDisplay">🔒 اضغط هنا</div>
+          <div class="tap-label" id="revealTapLabel"></div>
+          
           <div class="forbidden-list hidden" id="forbiddenBox">
             <div class="forbidden-title">⚠️ ممنوع تقول هالمصطلحات:</div>
             <div class="forbidden-words" id="forbiddenWords"></div>
           </div>
         </div>
 
-        <button class="btn btn-green" onclick="confirmGuessed()">✅ صح عليكم!</button>
-        <button class="btn btn-ghost" onclick="wrongGuess()">❌ غلط / انتهى الوقت</button>
+        <div>
+          <button class="btn btn-green" onclick="confirmGuessed()">✅ صح عليكم!</button>
+          <button class="btn btn-ghost" onclick="wrongGuess()">❌ يابوها غلط</button>
+          <button class="btn btn-ghost" onclick="burnWord()" style="color:var(--racing-red); border-color:var(--racing-red);">🔥 قلت الكلمة بالغلط</button>
+        </div>
+      </div>
+
+      <!-- STEAL AREA -->
+      <div id="stealArea" class="hidden">
+        <div class="steal-banner" id="stealBanner">🕵️ دور الفريق الثاني يسرقون النقطة!</div>
+        <div class="timer-caption">فرصة وحدة بس (10 ثوانٍ) يسرقون فيها نقطتين</div>
+        <button class="btn btn-green" onclick="confirmSteal(true)">✅ عرفوها! سرقوها</button>
+        <button class="btn btn-ghost" onclick="confirmSteal(false)">❌ ما عرفوها</button>
       </div>
     </div>
   </div>
 
   <!-- RESULT SCREEN -->
   <div id="screen-result" class="hidden">
+    <div class="lap" id="resultLapLabel">نتيجة الجولة</div>
     <div class="card">
       <div class="hint">الكلمة كانت</div>
       <div class="team-turn" style="color:var(--amber)" id="resultWord">-</div>
@@ -231,19 +273,39 @@
   <!-- OVER SCREEN -->
   <div id="screen-over" class="hidden">
     <div class="card" style="text-align:center;">
-      <h1 class="title">🏁 انتهت اللعبة!</h1>
+      <h1 class="title" style="margin-bottom:14px;">🏁 النتيجة النهائية!</h1>
+      <div class="score-board" style="margin-bottom:20px;">
+        <div class="team"><div class="name">الفريق الأحمر</div><div class="pts" id="finalPtsA" style="color:var(--racing-red)">0</div></div>
+        <div class="divider"></div>
+        <div class="team"><div class="name">الفريق الأخضر</div><div class="pts" id="finalPtsB" style="color:var(--go-green)">0</div></div>
+      </div>
       <div class="result-banner win" id="finalBanner"></div>
       <button class="btn btn-primary" onclick="location.reload()">🔁 لعبة جديدة</button>
+    </div>
+
+    <!-- HISTORY TABLE -->
+    <div class="card">
+      <div style="font-weight:700; margin-bottom:12px; text-align:center;">📋 ملخص الجولات</div>
+      <table style="width:100%; border-collapse:collapse; font-size:13px;">
+        <thead>
+          <tr style="color:#9a9ba5; border-bottom:1px solid var(--line);">
+            <th style="padding:6px; text-align:right;">الجولة</th>
+            <th style="padding:6px; text-align:right;">الكلمة</th>
+            <th style="padding:6px; text-align:right;">الفائز</th>
+            <th style="padding:6px; text-align:right;">النقاط</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
     </div>
   </div>
 </div>
 
 <script>
-// WORD BANK WITH TABOO FORBIDDEN WORDS
 const WORD_BANK = [
   { word: "سيارة", forbidden: ["تواير", "بنزين", "شارع", "سياقة"], cat: "cars", diff: "easy" },
-  { word: "محرك", forbidden: ["زيت", "بسطن", "سيارة", "قوة"], cat: "cars", diff: "medium" },
   { word: "فرامل", forbidden: ["توقف", "بريك", "دواسة", "سرعة"], cat: "cars", diff: "easy" },
+  { word: "توربو", forbidden: ["محرك", "سرعة", "قوة", "هوائي"], cat: "cars", diff: "medium" },
   { word: "كرة القدم", forbidden: ["ملعب", "هدف", "حكم", "لاعب"], cat: "football", diff: "easy" },
   { word: "ركلة جزاء", forbidden: ["بلنتي", "حارس", "خطأ", "مرمى"], cat: "football", diff: "medium" },
   { word: "مكياج", forbidden: ["وجه", "روج", "بنات", "حمرة"], cat: "girls", diff: "easy" },
@@ -252,6 +314,8 @@ const WORD_BANK = [
   { word: "طائرة", forbidden: ["مطار", "سماء", "جناح", "سفر"], cat: "general", diff: "medium" }
 ];
 
+const HINT_DURATIONS = [30, 20, 10];
+let selectedGameMode = "classic";
 let state = {};
 let timerInterval = null;
 let timeRemaining = 0;
@@ -262,31 +326,36 @@ function playBeep(freq = 440, duration = 0.15) {
   try {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.frequency.value = freq;
-    osc.start();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.frequency.value = freq; osc.start();
     gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
     osc.stop(audioCtx.currentTime + duration);
   } catch(e){}
 }
 
+function selectMode(mode, element) {
+  selectedGameMode = mode;
+  document.querySelectorAll('.mode-select-box').forEach(el => el.classList.remove('active'));
+  element.classList.add('active');
+}
+
 function startGame(){
-  const gameMode = document.getElementById("gameMode").value;
-  const teamA = document.getElementById("teamA").value.trim() || "الفريق الأحمر";
-  const teamB = document.getElementById("teamB").value.trim() || "الفريق الأخضر";
+  const category = document.getElementById("category").value;
+  const difficulty = document.getElementById("difficulty").value;
   const rounds = parseInt(document.getElementById("rounds").value);
 
-  // Pick Words
-  let pool = [...WORD_BANK].sort(() => Math.random() - 0.5).slice(0, rounds);
+  // Filter Pool
+  let pool = WORD_BANK.filter(w => (category === "mix" || w.cat === category) && w.diff === difficulty);
+  if(pool.length < rounds) pool = WORD_BANK; // Fallback
+  pool = pool.sort(() => Math.random() - 0.5).slice(0, rounds);
 
   state = {
-    gameMode, teamA, teamB, rounds, words: pool,
-    roundIndex: 0, scoreA: 0, scoreB: 0, hintTeam: "A"
+    gameMode: selectedGameMode,
+    teamA: "الفريق الأحمر", teamB: "الفريق الأخضر", rounds,
+    words: pool, roundIndex: 0, scoreA: 0, scoreB: 0, hintTeam: "A",
+    hintNumber: 1, history: []
   };
 
-  document.getElementById("sbNameA").textContent = teamA;
-  document.getElementById("sbNameB").textContent = teamB;
   show("screen-wheel");
 }
 
@@ -295,7 +364,7 @@ function spinWheel(){
   const totalDeg = 1800 + (winner === "A" ? 90 : 270);
   document.getElementById("wheel").style.transform = `rotate(${totalDeg}deg)`;
   state.hintTeam = winner;
-  
+
   setTimeout(() => {
     const name = winner === "A" ? state.teamA : state.teamB;
     document.getElementById("wheelResultBanner").textContent = `🎉 ${name} يبدأ أول!`;
@@ -310,32 +379,48 @@ function proceedToPlay(){
 }
 
 function setupRound(){
+  state.hintNumber = 1;
   document.getElementById("lapLabel").textContent = `الجولة ${state.roundIndex + 1} / ${state.rounds}`;
   document.getElementById("sbPtsA").textContent = state.scoreA;
   document.getElementById("sbPtsB").textContent = state.scoreB;
 
-  const teamName = state.hintTeam === "A" ? state.teamA : state.teamB;
-  document.getElementById("turnLabel").textContent = `دور ${teamName}`;
-
-  // Mode UI
   const modeBadge = document.getElementById("currentModeBadge");
-  const turnHint = document.getElementById("turnHint");
-  
-  if(state.gameMode === "charades") {
-    modeBadge.textContent = "🤐 طور ولا كلمة (مثل بالحركات فقط!)";
-    turnHint.textContent = "ممنوع تتكلم أو تطلع أي صوت! 🤫";
-  } else if(state.gameMode === "taboo") {
-    modeBadge.textContent = "🚫 طور لا تقولها (كلمات محظورة)";
-    turnHint.textContent = "اشرح الكلمة بدون ما تقول الكلمات المحظورة!";
-  } else {
-    modeBadge.textContent = "🎤 طور كلمة التقليدي";
-    turnHint.textContent = "اعطِ تلميح كلمة واحدة فقط!";
-  }
+  if(state.gameMode === "charades") modeBadge.textContent = "🤐 طور ولا كلمة (تمثيل)";
+  else if(state.gameMode === "taboo") modeBadge.textContent = "🚫 طور لا تقولها (كلمات محظورة)";
+  else modeBadge.textContent = "🎤 طور كلمة التقليدي";
 
+  const teamName = state.hintTeam === "A" ? state.teamA : state.teamB;
+  const turnEl = document.getElementById("turnLabel");
+  turnEl.textContent = `دور ${teamName}`;
+  turnEl.className = "team-turn " + (state.hintTeam === "A" ? "a" : "b");
+
+  document.getElementById("previewWordDisplay").textContent = "🔒 اضغط هنا";
+  document.getElementById("timerCaption").textContent = "ثانية للتفكير قبل بدء الجولة";
+
+  document.getElementById("previewArea").classList.remove("hidden");
+  document.getElementById("hintArea").classList.add("hidden");
+  document.getElementById("stealArea").classList.add("hidden");
+
+  startTimer(30, () => startHintPhase());
+}
+
+function skipPreview(){
+  startHintPhase();
+}
+
+function startHintPhase(){
+  document.getElementById("previewArea").classList.add("hidden");
+  document.getElementById("hintArea").classList.remove("hidden");
+  setupTurn();
+}
+
+function setupTurn(){
+  document.getElementById("hintBadge").textContent = `المحاولة ${state.hintNumber} / 3`;
+  document.getElementById("timerCaption").textContent = "ثانية متبقية";
   document.getElementById("wordDisplay").textContent = "🔒 اضغط هنا";
-  document.getElementById("forbiddenBox").classList.add("hidden");
 
-  startTimer(30);
+  const duration = HINT_DURATIONS[state.hintNumber - 1];
+  startTimer(duration, () => wrongGuess());
 }
 
 function revealWord(){
@@ -349,15 +434,21 @@ function revealWord(){
     fBox.classList.remove("hidden");
   }
 }
-
 function hideWord(){
   document.getElementById("wordDisplay").textContent = "🔒 اضغط هنا";
   document.getElementById("forbiddenBox").classList.add("hidden");
 }
 
-function startTimer(sec){
+function revealPreviewWord(){
+  document.getElementById("previewWordDisplay").textContent = state.words[state.roundIndex].word;
+}
+function hidePreviewWord(){
+  document.getElementById("previewWordDisplay").textContent = "🔒 اضغط هنا";
+}
+
+function startTimer(duration, onTimeout){
   clearInterval(timerInterval);
-  timeRemaining = sec;
+  timeRemaining = duration;
   document.getElementById("timerDisplay").textContent = timeRemaining;
   document.body.classList.remove("time-warning");
 
@@ -365,18 +456,17 @@ function startTimer(sec){
     timeRemaining--;
     document.getElementById("timerDisplay").textContent = timeRemaining;
 
-    // Flash and vibrate when time is <= 5 seconds
-    if(timeRemaining <= 5 && timeRemaining > 0) {
+    if(timeRemaining <= 5 && timeRemaining > 0){
       document.body.classList.add("time-warning");
       playBeep(600, 0.1);
-      if(navigator.vibrate) navigator.vibrate(200);
+      if(navigator.vibrate) navigator.vibrate(150);
     }
 
-    if(timeRemaining <= 0) {
+    if(timeRemaining <= 0){
       clearInterval(timerInterval);
       document.body.classList.remove("time-warning");
-      playBeep(300, 0.4); // Time over sound
-      wrongGuess();
+      playBeep(300, 0.4);
+      onTimeout();
     }
   }, 1000);
 }
@@ -384,21 +474,67 @@ function startTimer(sec){
 function confirmGuessed(){
   clearInterval(timerInterval);
   document.body.classList.remove("time-warning");
-  if(state.hintTeam === "A") state.scoreA += 2;
-  else state.scoreB += 2;
-  showRoundResult(true);
+  
+  const pts = state.hintNumber === 1 ? 3 : (state.hintNumber === 2 ? 2 : 1);
+  const winner = state.hintTeam === "A" ? state.teamA : state.teamB;
+  
+  if(state.hintTeam === "A") state.scoreA += pts;
+  else state.scoreB += pts;
+
+  state.history.push({ round: state.roundIndex + 1, word: state.words[state.roundIndex].word, winner, pts });
+  showRoundResult(`🏆 ${winner} يابوها صح بالمحاولة (${state.hintNumber})! +${pts} نقاط`);
 }
 
 function wrongGuess(){
   clearInterval(timerInterval);
   document.body.classList.remove("time-warning");
-  showRoundResult(false);
+
+  if(state.hintNumber >= 3){
+    startStealPhase();
+  } else {
+    state.hintNumber++;
+    setupTurn();
+  }
 }
 
-function showRoundResult(win){
-  const name = state.hintTeam === "A" ? state.teamA : state.teamB;
+function burnWord(){
+  clearInterval(timerInterval);
+  document.body.classList.remove("time-warning");
+  state.history.push({ round: state.roundIndex + 1, word: state.words[state.roundIndex].word, winner: "🔥 ملغاة", pts: 0 });
+  showRoundResult("🔥 قيلت الكلمة بالغلط! الجولة تلغى ومحد ياخذ نقاط");
+}
+
+function startStealPhase(){
+  const stealTeam = state.hintTeam === "A" ? state.teamB : state.teamA;
+  document.getElementById("hintArea").classList.add("hidden");
+  document.getElementById("stealArea").classList.remove("hidden");
+  document.getElementById("stealBanner").textContent = `🕵️ دور ${stealTeam} يسرقون النقطة!`;
+  
+  startTimer(10, () => confirmSteal(false));
+}
+
+function confirmSteal(correct){
+  clearInterval(timerInterval);
+  document.body.classList.remove("time-warning");
+
+  const stealTeamId = state.hintTeam === "A" ? "B" : "A";
+  const stealTeamName = stealTeamId === "A" ? state.teamA : state.teamB;
+
+  if(correct){
+    if(stealTeamId === "A") state.scoreA += 2;
+    else state.scoreB += 2;
+    state.history.push({ round: state.roundIndex + 1, word: state.words[state.roundIndex].word, winner: stealTeamName, pts: 2 });
+    showRoundResult(`🕵️ ${stealTeamName} سرقوا النقطة! +2 نقاط`);
+  } else {
+    state.history.push({ round: state.roundIndex + 1, word: state.words[state.roundIndex].word, winner: "ولا أحد", pts: 0 });
+    showRoundResult("❌ محد عرف الكلمة، هالجولة بدون نقاط");
+  }
+}
+
+function showRoundResult(msg){
+  document.getElementById("resultLapLabel").textContent = `نتيجة الجولة ${state.roundIndex + 1}`;
   document.getElementById("resultWord").textContent = state.words[state.roundIndex].word;
-  document.getElementById("resultBanner").textContent = win ? `🏆 ${name} جاوبوا صح! (+2 نقطة)` : `❌ لأسف ما عرفوها!`;
+  document.getElementById("resultBanner").textContent = msg;
   show("screen-result");
 }
 
@@ -415,10 +551,24 @@ function nextRound(){
 }
 
 function showGameOver(){
-  const b = document.getElementById("finalBanner");
-  if(state.scoreA > state.scoreB) b.textContent = `🎉 الفائز: ${state.teamA} (${state.scoreA} نقطة)`;
-  else if(state.scoreB > state.scoreA) b.textContent = `🎉 الفائز: ${state.teamB} (${state.scoreB} نقطة)`;
-  else b.textContent = "🤝 تعادل!";
+  document.getElementById("finalPtsA").textContent = state.scoreA;
+  document.getElementById("finalPtsB").textContent = state.scoreB;
+
+  const banner = document.getElementById("finalBanner");
+  if(state.scoreA > state.scoreB) banner.textContent = `🎉 الفائز: ${state.teamA}!`;
+  else if(state.scoreB > state.scoreA) banner.textContent = `🎉 الفائز: ${state.teamB}!`;
+  else banner.textContent = "🤝 تعادل تام بين الفريقين!";
+
+  const tbody = document.getElementById("historyBody");
+  tbody.innerHTML = state.history.map(h => `
+    <tr style="border-bottom:1px solid var(--line);">
+      <td style="padding:8px 6px;">${h.round}</td>
+      <td style="padding:8px 6px; color:var(--amber);">${h.word}</td>
+      <td style="padding:8px 6px; font-weight:bold;">${h.winner}</td>
+      <td style="padding:8px 6px;">${h.pts > 0 ? "+" + h.pts : "0"}</td>
+    </tr>
+  `).join("");
+
   show("screen-over");
 }
 
