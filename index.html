@@ -119,9 +119,9 @@
   }
 
   .reveal-box{
-    background:var(--asphalt-2); border:2px dashed var(--line); border-radius:14px; padding:24px 18px; text-align:center; cursor:pointer; margin-bottom:18px; user-select:none;
+    background:var(--asphalt-2); border:2px dashed var(--line); border-radius:14px; padding:24px 18px; text-align:center; cursor:pointer; margin-bottom:18px; user-select:none; white-space: pre-line;
   }
-  .reveal-box .word{ font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:30px; color:var(--off-white); }
+  .reveal-box .word{ font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:26px; color:var(--off-white); }
   .reveal-box .tap-label{ color:#8a8b96; font-size:14px; margin-top:6px; }
 
   .forbidden-list { margin-top: 15px; background: rgba(230,57,70,0.15); border: 1px solid var(--racing-red); border-radius: 8px; padding: 10px; }
@@ -155,6 +155,7 @@
 <div class="app">
   <div class="flagbar"></div>
 
+  <!-- SETUP SCREEN -->
   <div id="screen-setup">
     <h1 class="title">مجموعة ألعاب <span>كلمة 🎤</span></h1>
     <div class="subtitle">اختر اللعبة، فكر بالتلميح، واجمع النقاط!</div>
@@ -209,6 +210,13 @@
         </div>
       </div>
 
+      <label>نمط الوقت ⏱️</label>
+      <select id="timePacing">
+        <option value="relaxed">🐢 خذ راحتك (+10 ثوانٍ لكل شيء)</option>
+        <option value="normal" selected>⚡ يلا أسرع (الوقت العادي)</option>
+        <option value="rush">🔥 لا توهق عمرك (-5 ثوانٍ، والسرقة 10 ثوانٍ)</option>
+      </select>
+
       <label>عدد اللفات</label>
       <select id="rounds">
         <option value="5">5</option>
@@ -220,6 +228,7 @@
     </div>
   </div>
 
+  <!-- WHEEL SCREEN -->
   <div id="screen-wheel" class="hidden">
     <div class="card" style="text-align:center;">
       <h1 class="title" style="margin-bottom:4px;">🎡 قرعة البداية</h1>
@@ -242,6 +251,7 @@
     </div>
   </div>
 
+  <!-- PLAY SCREEN -->
   <div id="screen-play" class="hidden">
     <div class="header-bar">
       <div class="lap" id="lapLabel" style="margin:0;">الجولة 1 / 7</div>
@@ -261,6 +271,7 @@
 
       <div class="team-turn" id="turnLabel">دور الفريق الأحمر</div>
 
+      <!-- PREVIEW AREA -->
       <div id="previewArea">
         <div class="hint" style="margin-bottom:10px;">هذي كلمتكم، فكروا شلون تلمحون عليها 🧠</div>
         <div class="reveal-box" onpointerdown="revealPreviewWord()" onpointerup="hidePreviewWord()" onpointerleave="hidePreviewWord()">
@@ -269,6 +280,7 @@
         <button class="btn btn-amber" onclick="skipPreview()" style="margin-top:16px;">🚀 جاهزين، ابدأ</button>
       </div>
 
+      <!-- HINT AREA -->
       <div id="hintArea" class="hidden">
         <div class="hint-badge" id="hintBadge">التلميح 1 / 3</div>
         <div class="hint" id="hintInstr">اضغط واكشف الكلمة (بس أنت اللي يشوفها! 🤫)</div>
@@ -290,15 +302,17 @@
         </div>
       </div>
 
+      <!-- STEAL AREA -->
       <div id="stealArea" class="hidden">
         <div class="steal-banner" id="stealBanner">🕵️ دور الفريق الثاني يسرقون النقطة!</div>
-        <div class="timer-caption">فرصة وحدة بس (10 ثوانٍ) يسرقون فيها نقطتين</div>
+        <div class="timer-caption">فرصة وحدة بس يسرقون فيها نقطتين</div>
         <button class="btn btn-green" onclick="confirmSteal(true)">✅ عرفوها! سرقوها</button>
         <button class="btn btn-ghost" onclick="confirmSteal(false)">❌ ما عرفوها</button>
       </div>
     </div>
   </div>
 
+  <!-- SETTINGS MODAL -->
   <div id="modal-settings" class="modal-overlay hidden">
     <div class="modal-card">
       <h2 style="text-align:center; margin-top:0; color:var(--amber);">⚙️ إعدادات اللعبة</h2>
@@ -317,6 +331,7 @@
     </div>
   </div>
 
+  <!-- RESULT SCREEN -->
   <div id="screen-result" class="hidden">
     <div class="lap" id="resultLapLabel">نتيجة الجولة</div>
     <div class="card">
@@ -329,6 +344,7 @@
     </div>
   </div>
 
+  <!-- OVER SCREEN -->
   <div id="screen-over" class="hidden">
     <div class="card" style="text-align:center;">
       <h1 class="title" style="margin-bottom:14px;">🏁 النتيجة النهائية!</h1>
@@ -341,6 +357,7 @@
       <button class="btn btn-primary" onclick="location.reload()">🔁 لعبة جديدة</button>
     </div>
 
+    <!-- HISTORY TABLE -->
     <div class="card">
       <div style="font-weight:700; margin-bottom:12px; text-align:center;">📋 ملخص الجولات</div>
       <table style="width:100%; border-collapse:collapse; font-size:13px;">
@@ -414,7 +431,6 @@ const WORD_BANK = [
   { word: "سينما", forbidden: ["فيلم", "نفيش", "شاشة", "تذكرة"], cat: "general", diff: "easy" }
 ];
 
-const HINT_DURATIONS = [30, 20, 10];
 let selectedGameMode = "classic";
 let state = {};
 let timerInterval = null;
@@ -459,6 +475,7 @@ function selectMode(mode, element) {
 function startGame(){
   const category = document.getElementById("category").value;
   const difficulty = document.getElementById("difficulty").value;
+  const timePacing = document.getElementById("timePacing").value;
   const rounds = parseInt(document.getElementById("rounds").value);
 
   const nameA = document.getElementById("teamA").value.trim() || "الفريق الأحمر";
@@ -470,6 +487,7 @@ function startGame(){
 
   state = {
     gameMode: selectedGameMode,
+    timePacing: timePacing,
     teamA: nameA, teamB: nameB, rounds,
     words: pool, roundIndex: 0, scoreA: 0, scoreB: 0, hintTeam: "A",
     hintNumber: 1, history: []
@@ -537,6 +555,24 @@ function proceedToPlay(){
   setupRound();
 }
 
+function getTimeDurations() {
+  let previewTime = 30;
+  let hints = [30, 20, 10];
+  let stealTime = 10;
+
+  if (state.timePacing === "relaxed") {
+    previewTime += 10;
+    hints = hints.map(t => t + 10);
+    stealTime += 10;
+  } else if (state.timePacing === "rush") {
+    previewTime -= 5;
+    hints = hints.map(t => t - 5);
+    stealTime = 10; 
+  }
+
+  return { previewTime, hints, stealTime };
+}
+
 function setupRound(){
   state.hintNumber = 1;
   document.getElementById("lapLabel").textContent = `الجولة ${state.roundIndex + 1} / ${state.rounds}`;
@@ -560,7 +596,8 @@ function setupRound(){
   document.getElementById("hintArea").classList.add("hidden");
   document.getElementById("stealArea").classList.add("hidden");
 
-  startTimer(30, () => startHintPhase());
+  const times = getTimeDurations();
+  startTimer(times.previewTime, () => startHintPhase());
 }
 
 function skipPreview(){ startHintPhase(); }
@@ -576,7 +613,8 @@ function setupTurn(){
   document.getElementById("timerCaption").textContent = "ثانية متبقية";
   document.getElementById("wordDisplay").textContent = "🔒 اضغط هنا";
 
-  const duration = HINT_DURATIONS[state.hintNumber - 1];
+  const times = getTimeDurations();
+  const duration = times.hints[state.hintNumber - 1];
   startTimer(duration, () => wrongGuess());
 }
 
@@ -591,13 +629,24 @@ function revealWord(){
     fBox.classList.remove("hidden");
   }
 }
+
 function hideWord(){
   document.getElementById("wordDisplay").textContent = "🔒 اضغط هنا";
   document.getElementById("forbiddenBox").classList.add("hidden");
 }
 
-function revealPreviewWord(){ document.getElementById("previewWordDisplay").textContent = state.words[state.roundIndex].word; }
-function hidePreviewWord(){ document.getElementById("previewWordDisplay").textContent = "🔒 اضغط هنا"; }
+function revealPreviewWord(){ 
+  const curr = state.words[state.roundIndex];
+  let text = curr.word;
+  if(state.gameMode === "taboo") {
+    text += "\n\n🚫 المحظور:\n" + curr.forbidden.join(" - ");
+  }
+  document.getElementById("previewWordDisplay").textContent = text; 
+}
+
+function hidePreviewWord(){ 
+  document.getElementById("previewWordDisplay").textContent = "🔒 اضغط هنا"; 
+}
 
 function startTimer(duration, onTimeout){
   clearInterval(timerInterval);
@@ -666,7 +715,8 @@ function startStealPhase(){
   document.getElementById("stealArea").classList.remove("hidden");
   document.getElementById("stealBanner").textContent = `🕵️ دور ${stealTeam} يسرقون النقطة!`;
   
-  startTimer(10, () => confirmSteal(false));
+  const times = getTimeDurations();
+  startTimer(times.stealTime, () => confirmSteal(false));
 }
 
 function confirmSteal(correct){
@@ -738,4 +788,3 @@ function show(id){
 </script>
 </body>
 </html>
-
