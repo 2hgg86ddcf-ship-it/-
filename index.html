@@ -473,8 +473,13 @@
       <!-- PREVIEW SUB-VIEW: thinking time before hints start -->
       <div id="previewArea">
         <div class="hint" style="margin-bottom:10px;">هذي كلمتكم، فكروا شلون تلمحون عليها 🧠</div>
-        <div class="reveal-box" style="cursor:default;">
-          <div class="word" id="previewWordDisplay">-</div>
+        <div class="reveal-box" id="previewRevealBox"
+             onpointerdown="revealPreviewWord()"
+             onpointerup="hidePreviewWord()"
+             onpointerleave="hidePreviewWord()"
+             onpointercancel="hidePreviewWord()"
+             style="touch-action:manipulation; -webkit-user-select:none; user-select:none;">
+          <div class="word" id="previewWordDisplay">🔒 اضغط هنا</div>
         </div>
         <button class="btn btn-amber" onclick="skipPreview()" style="margin-top:16px;">🚀 جاهزين، ابدأ التلميح</button>
       </div>
@@ -837,7 +842,7 @@ function setupPreview(){
   turnEl.textContent = `دور ${teamName}`;
   turnEl.className = "team-turn turn-wiggle " + (state.hintTeam === "A" ? "a" : "b");
 
-  document.getElementById("previewWordDisplay").textContent = state.words[state.roundIndex];
+  document.getElementById("previewWordDisplay").textContent = "🔒 اضغط هنا";
   document.getElementById("timerCaption").textContent = "ثانية للتفكير قبل ما تبدأ التلميحات";
 
   document.getElementById("previewArea").classList.remove("hidden");
@@ -894,6 +899,19 @@ function revealWord(){
 function hideWord(){
   if(!state.revealed) return;
   const wordEl = document.getElementById("wordDisplay");
+  wordEl.textContent = "🔒 اضغط هنا";
+  wordEl.classList.remove("word-pop");
+}
+
+function revealPreviewWord(){
+  const word = state.words[state.roundIndex];
+  const wordEl = document.getElementById("previewWordDisplay");
+  wordEl.textContent = word;
+  wordEl.classList.add("word-pop");
+}
+
+function hidePreviewWord(){
+  const wordEl = document.getElementById("previewWordDisplay");
   wordEl.textContent = "🔒 اضغط هنا";
   wordEl.classList.remove("word-pop");
 }
