@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>مجموعة ألعاب كلمة 🎤🤐🚫</title>
+<style>
+  :root{
+    --asphalt:#141519;
+    --asphalt-2:#1d1f26;
+    --panel:#23252d;
+    --off-white:#EDEAE3;
+    --racing-red:#E63946;
+    --amber:#F4A300;
+    --go-green:#3AAA35;
+    --line:#33353f;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--asphalt);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(244,163,0,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(230,57,70,0.07), transparent 40%);
+    color:var(--off-white);
+    font-family:'Tahoma','Segoe UI',sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    padding-top:calc(env(safe-area-inset-top, 0px) + 28px);
+    transition: background 0.3s ease;
+  }
+  body.time-warning {
+    animation: flashRed 0.6s infinite alternate;
+  }
+  @keyframes flashRed {
+    0% { background-color: var(--asphalt); }
+    100% { background-color: #4a0d13; }
+  }
+  .app{ width:100%; max-width:440px; }
+  .flagbar{
+    height:8px; width:100%; border-radius:6px; margin-bottom:18px;
+    background-image: repeating-linear-gradient(45deg, var(--off-white) 0 8px, var(--asphalt-2) 8px 16px);
+    opacity:0.9;
+  }
+  h1.title{
+    font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:28px; text-align:center; margin:0 0 4px;
+  }
+  .title span{ color:var(--amber); }
+  .subtitle{ text-align:center; color:#9a9ba5; font-size:13px; margin-bottom:22px; }
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:22px; margin-bottom:16px; box-shadow:0 10px 30px rgba(0,0,0,0.35);
+  }
+  label{ display:block; font-size:13px; color:#b7b8c2; margin-bottom:6px; font-weight:600; }
+  input[type=text], select{
+    width:100%; background:var(--asphalt-2); border:1px solid var(--line); color:var(--off-white); padding:12px 14px; border-radius:10px; font-family:'Tahoma','Segoe UI',sans-serif; font-size:15px; margin-bottom:16px; outline:none;
+  }
+  input[type=text]:focus, select:focus{ border-color:var(--amber); }
+  .row{ display:flex; gap:10px; }
+  .row > div{ flex:1; }
+  .btn{
+    display:block; width:100%; border:none; border-radius:12px; padding:15px; font-family:'Segoe UI','Tahoma',sans-serif; font-weight:700; font-size:16px; cursor:pointer; transition:transform .1s ease, filter .15s ease;
+  }
+  .btn:active{ transform:scale(0.97); }
+  .btn-primary{ background:var(--racing-red); color:white; }
+  .btn-amber{ background:var(--amber); color:var(--asphalt); }
+  .btn-green{ background:var(--go-green); color:white; }
+  .btn-ghost{ background:transparent; border:1px solid var(--line); color:var(--off-white); }
+  .btn + .btn{ margin-top:10px; }
+
+  .lap{ font-family:'Consolas','Courier New',monospace; color:var(--amber); font-size:13px; text-align:center; letter-spacing:2px; margin-bottom:8px; }
+  .team-turn{ text-align:center; font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:22px; margin-bottom:4px; }
+  .team-turn.a{ color:var(--racing-red); }
+  .team-turn.b{ color:var(--go-green); }
+  .hint{ text-align:center; color:#9a9ba5; font-size:13px; margin-bottom:18px; }
+
+  .mode-badge {
+    background: var(--amber); color: var(--asphalt); text-align: center; font-weight: 900; padding: 6px 12px; border-radius: 20px; font-size: 13px; margin: 0 auto 12px; width: fit-content;
+  }
+
+  .reveal-box{
+    background:var(--asphalt-2); border:2px dashed var(--line); border-radius:14px; padding:24px 18px; text-align:center; cursor:pointer; margin-bottom:18px; user-select:none;
+  }
+  .reveal-box .word{ font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:28px; color:var(--off-white); }
+  .forbidden-list { margin-top: 15px; background: rgba(230,57,70,0.15); border: 1px solid var(--racing-red); border-radius: 8px; padding: 10px; }
+  .forbidden-title { color: var(--racing-red); font-weight: 700; font-size: 12px; margin-bottom: 6px; }
+  .forbidden-words { color: var(--off-white); font-weight: bold; font-size: 14px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .forbidden-tag { background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 6px; }
+
+  .score-board{ display:flex; justify-content:space-between; background:var(--asphalt-2); border-radius:12px; padding:12px 16px; margin-bottom:16px; }
+  .score-board .team{ text-align:center; flex:1; }
+  .score-board .team .pts{ font-size:22px; font-weight:900; }
+  .score-board .divider{ width:1px; background:var(--line); }
+
+  .timer-display{ text-align:center; font-family:'Consolas','Courier New',monospace; font-weight:900; font-size:56px; color:var(--go-green); line-height:1; }
+  .timer-caption{ text-align:center; font-size:11px; color:#9a9ba5; margin-bottom:14px; }
+
+  .hidden{ display:none !important; }
+  .result-banner{ text-align:center; font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:18px; padding:14px; border-radius:12px; margin-bottom:16px; }
+  .result-banner.win{ background:rgba(58,170,53,0.15); color:var(--go-green); border:1px solid rgba(58,170,53,0.4); }
+  .result-banner.tie{ background:rgba(244,163,0,0.15); color:var(--amber); border:1px solid rgba(244,163,0,0.4); }
+
+  .wheel{ width:220px; height:220px; border-radius:50%; background: conic-gradient(var(--racing-red) 0deg 180deg, var(--go-green) 180deg 360deg); position:relative; transition: transform 3.2s cubic-bezier(.12,.67,.10,1); border:5px solid var(--asphalt-2); }
+  .wheel-pointer{ width:0; height:0; border-left:14px solid transparent; border-right:14px solid transparent; border-top:22px solid var(--amber); margin:0 auto -2px; position:relative; z-index:2; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="flagbar"></div>
+
+  <!-- SETUP SCREEN -->
+  <div id="screen-setup">
+    <h1 class="title">مجموعة ألعاب <span>كلمة 🎤</span></h1>
+    <div class="subtitle">اختر طور اللعب، تحدّى ربعك، واجمع النقاط!</div>
+
+    <div class="card">
+      <label>طور اللعب (Game Mode)</label>
+      <select id="gameMode">
+        <option value="classic" selected>🎤 كلمة (شرح بالتلميحات)</option>
+        <option value="charades">🤐 ولا كلمة (تمثيل بالحركات فقط)</option>
+        <option value="taboo">🚫 لا تقولها (كلمات محظورة)</option>
+      </select>
+
+      <label>اسم الفريق الأول</label>
+      <input type="text" id="teamA" placeholder="الفريق الأحمر" maxlength="16">
+
+      <label>اسم الفريق الثاني</label>
+      <input type="text" id="teamB" placeholder="الفريق الأخضر" maxlength="16">
+
+      <div class="row">
+        <div>
+          <label>التصنيف</label>
+          <select id="category">
+            <option value="cars">سيارات 🏎️</option>
+            <option value="football">كرة قدم ⚽</option>
+            <option value="girls">بنات 💅</option>
+            <option value="general">عام 🎲</option>
+            <option value="mix" selected>خليط منوع</option>
+          </select>
+        </div>
+        <div>
+          <label>الصعوبة</label>
+          <select id="difficulty">
+            <option value="easy">سهل 🟢</option>
+            <option value="medium" selected>متوسط 🟡</option>
+            <option value="hard">صعب 🔴</option>
+          </select>
+        </div>
+      </div>
+
+      <label>عدد اللفات</label>
+      <select id="rounds">
+        <option value="5">5</option>
+        <option value="7" selected>7</option>
+        <option value="10">10</option>
+      </select>
+
+      <button class="btn btn-primary" onclick="startGame()">🎬 يلا نبدأ!</button>
+    </div>
+  </div>
+
+  <!-- WHEEL SCREEN -->
+  <div id="screen-wheel" class="hidden">
+    <div class="card" style="text-align:center;">
+      <h1 class="title">🎡 قرعة البداية</h1>
+      <div class="subtitle">دز على العجلة عشان تشوف منو يلعب أول</div>
+
+      <div style="position:relative; width:220px; margin:0 auto 22px;">
+        <div class="wheel-pointer"></div>
+        <div class="wheel" id="wheel"></div>
+      </div>
+
+      <button class="btn btn-primary" id="spinBtn" onclick="spinWheel()">🎡 دز واقلب العجلة</button>
+
+      <div id="wheelResultArea" class="hidden" style="margin-top:16px;">
+        <div class="result-banner win" id="wheelResultBanner">🎉 يبدأ أول!</div>
+        <button class="btn btn-amber" onclick="proceedToPlay()">يلا نلعب 🎮</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAY SCREEN -->
+  <div id="screen-play" class="hidden">
+    <div class="lap" id="lapLabel">الجولة 1 / 7</div>
+    <div class="score-board">
+      <div class="team"><div id="sbNameA" style="font-size:12px; color:#9a9ba5;"></div><div class="pts" id="sbPtsA" style="color:var(--racing-red)">0</div></div>
+      <div class="divider"></div>
+      <div class="team"><div id="sbNameB" style="font-size:12px; color:#9a9ba5;"></div><div class="pts" id="sbPtsB" style="color:var(--go-green)">0</div></div>
+    </div>
+
+    <div class="card">
+      <div class="mode-badge" id="currentModeBadge">🎤 طور كلمة</div>
+      <div class="timer-display" id="timerDisplay">30</div>
+      <div class="timer-caption" id="timerCaption">ثانية متبقية</div>
+
+      <div class="team-turn" id="turnLabel">دور الفريق الأول</div>
+
+      <!-- HINT & PLAY AREA -->
+      <div id="hintArea">
+        <div class="hint" id="turnHint">اضغط واكشف الكلمة (بس أنت اللي يشوفها! 🤫)</div>
+
+        <div class="reveal-box" id="revealBox" onpointerdown="revealWord()" onpointerup="hideWord()" onpointerleave="hideWord()">
+          <div class="word" id="wordDisplay">🔒 اضغط هنا</div>
+          <div class="forbidden-list hidden" id="forbiddenBox">
+            <div class="forbidden-title">⚠️ ممنوع تقول هالمصطلحات:</div>
+            <div class="forbidden-words" id="forbiddenWords"></div>
+          </div>
+        </div>
+
+        <button class="btn btn-green" onclick="confirmGuessed()">✅ صح عليكم!</button>
+        <button class="btn btn-ghost" onclick="wrongGuess()">❌ غلط / انتهى الوقت</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="screen-result" class="hidden">
+    <div class="card">
+      <div class="hint">الكلمة كانت</div>
+      <div class="team-turn" style="color:var(--amber)" id="resultWord">-</div>
+
+      <div class="result-banner win" id="resultBanner">🏆 فاز الفريق بالجولة</div>
+
+      <button class="btn btn-amber" onclick="nextRound()" id="nextBtn">التالي 👉</button>
+    </div>
+  </div>
+
+  <!-- OVER SCREEN -->
+  <div id="screen-over" class="hidden">
+    <div class="card" style="text-align:center;">
+      <h1 class="title">🏁 انتهت اللعبة!</h1>
+      <div class="result-banner win" id="finalBanner"></div>
+      <button class="btn btn-primary" onclick="location.reload()">🔁 لعبة جديدة</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// WORD BANK WITH TABOO FORBIDDEN WORDS
+const WORD_BANK = [
+  { word: "سيارة", forbidden: ["تواير", "بنزين", "شارع", "سياقة"], cat: "cars", diff: "easy" },
+  { word: "محرك", forbidden: ["زيت", "بسطن", "سيارة", "قوة"], cat: "cars", diff: "medium" },
+  { word: "فرامل", forbidden: ["توقف", "بريك", "دواسة", "سرعة"], cat: "cars", diff: "easy" },
+  { word: "كرة القدم", forbidden: ["ملعب", "هدف", "حكم", "لاعب"], cat: "football", diff: "easy" },
+  { word: "ركلة جزاء", forbidden: ["بلنتي", "حارس", "خطأ", "مرمى"], cat: "football", diff: "medium" },
+  { word: "مكياج", forbidden: ["وجه", "روج", "بنات", "حمرة"], cat: "girls", diff: "easy" },
+  { word: "عطر", forbidden: ["ريحة", "رش", "بخور", "زجاجة"], cat: "girls", diff: "easy" },
+  { word: "قهوة", forbidden: ["كوب", "هيل", "صب", "شرب"], cat: "general", diff: "easy" },
+  { word: "طائرة", forbidden: ["مطار", "سماء", "جناح", "سفر"], cat: "general", diff: "medium" }
+];
+
+let state = {};
+let timerInterval = null;
+let timeRemaining = 0;
+
+// Audio Context for Beeps
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playBeep(freq = 440, duration = 0.15) {
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.frequency.value = freq;
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+    osc.stop(audioCtx.currentTime + duration);
+  } catch(e){}
+}
+
+function startGame(){
+  const gameMode = document.getElementById("gameMode").value;
+  const teamA = document.getElementById("teamA").value.trim() || "الفريق الأحمر";
+  const teamB = document.getElementById("teamB").value.trim() || "الفريق الأخضر";
+  const rounds = parseInt(document.getElementById("rounds").value);
+
+  // Pick Words
+  let pool = [...WORD_BANK].sort(() => Math.random() - 0.5).slice(0, rounds);
+
+  state = {
+    gameMode, teamA, teamB, rounds, words: pool,
+    roundIndex: 0, scoreA: 0, scoreB: 0, hintTeam: "A"
+  };
+
+  document.getElementById("sbNameA").textContent = teamA;
+  document.getElementById("sbNameB").textContent = teamB;
+  show("screen-wheel");
+}
+
+function spinWheel(){
+  const winner = Math.random() < 0.5 ? "A" : "B";
+  const totalDeg = 1800 + (winner === "A" ? 90 : 270);
+  document.getElementById("wheel").style.transform = `rotate(${totalDeg}deg)`;
+  state.hintTeam = winner;
+  
+  setTimeout(() => {
+    const name = winner === "A" ? state.teamA : state.teamB;
+    document.getElementById("wheelResultBanner").textContent = `🎉 ${name} يبدأ أول!`;
+    document.getElementById("wheelResultArea").classList.remove("hidden");
+    document.getElementById("spinBtn").classList.add("hidden");
+  }, 3300);
+}
+
+function proceedToPlay(){
+  show("screen-play");
+  setupRound();
+}
+
+function setupRound(){
+  document.getElementById("lapLabel").textContent = `الجولة ${state.roundIndex + 1} / ${state.rounds}`;
+  document.getElementById("sbPtsA").textContent = state.scoreA;
+  document.getElementById("sbPtsB").textContent = state.scoreB;
+
+  const teamName = state.hintTeam === "A" ? state.teamA : state.teamB;
+  document.getElementById("turnLabel").textContent = `دور ${teamName}`;
+
+  // Mode UI
+  const modeBadge = document.getElementById("currentModeBadge");
+  const turnHint = document.getElementById("turnHint");
+  
+  if(state.gameMode === "charades") {
+    modeBadge.textContent = "🤐 طور ولا كلمة (مثل بالحركات فقط!)";
+    turnHint.textContent = "ممنوع تتكلم أو تطلع أي صوت! 🤫";
+  } else if(state.gameMode === "taboo") {
+    modeBadge.textContent = "🚫 طور لا تقولها (كلمات محظورة)";
+    turnHint.textContent = "اشرح الكلمة بدون ما تقول الكلمات المحظورة!";
+  } else {
+    modeBadge.textContent = "🎤 طور كلمة التقليدي";
+    turnHint.textContent = "اعطِ تلميح كلمة واحدة فقط!";
+  }
+
+  document.getElementById("wordDisplay").textContent = "🔒 اضغط هنا";
+  document.getElementById("forbiddenBox").classList.add("hidden");
+
+  startTimer(30);
+}
+
+function revealWord(){
+  const curr = state.words[state.roundIndex];
+  document.getElementById("wordDisplay").textContent = curr.word;
+
+  if(state.gameMode === "taboo") {
+    const fBox = document.getElementById("forbiddenBox");
+    const fWords = document.getElementById("forbiddenWords");
+    fWords.innerHTML = curr.forbidden.map(w => `<span class="forbidden-tag">${w}</span>`).join("");
+    fBox.classList.remove("hidden");
+  }
+}
+
+function hideWord(){
+  document.getElementById("wordDisplay").textContent = "🔒 اضغط هنا";
+  document.getElementById("forbiddenBox").classList.add("hidden");
+}
+
+function startTimer(sec){
+  clearInterval(timerInterval);
+  timeRemaining = sec;
+  document.getElementById("timerDisplay").textContent = timeRemaining;
+  document.body.classList.remove("time-warning");
+
+  timerInterval = setInterval(() => {
+    timeRemaining--;
+    document.getElementById("timerDisplay").textContent = timeRemaining;
+
+    // Flash and vibrate when time is <= 5 seconds
+    if(timeRemaining <= 5 && timeRemaining > 0) {
+      document.body.classList.add("time-warning");
+      playBeep(600, 0.1);
+      if(navigator.vibrate) navigator.vibrate(200);
+    }
+
+    if(timeRemaining <= 0) {
+      clearInterval(timerInterval);
+      document.body.classList.remove("time-warning");
+      playBeep(300, 0.4); // Time over sound
+      wrongGuess();
+    }
+  }, 1000);
+}
+
+function confirmGuessed(){
+  clearInterval(timerInterval);
+  document.body.classList.remove("time-warning");
+  if(state.hintTeam === "A") state.scoreA += 2;
+  else state.scoreB += 2;
+  showRoundResult(true);
+}
+
+function wrongGuess(){
+  clearInterval(timerInterval);
+  document.body.classList.remove("time-warning");
+  showRoundResult(false);
+}
+
+function showRoundResult(win){
+  const name = state.hintTeam === "A" ? state.teamA : state.teamB;
+  document.getElementById("resultWord").textContent = state.words[state.roundIndex].word;
+  document.getElementById("resultBanner").textContent = win ? `🏆 ${name} جاوبوا صح! (+2 نقطة)` : `❌ لأسف ما عرفوها!`;
+  show("screen-result");
+}
+
+function nextRound(){
+  state.roundIndex++;
+  state.hintTeam = state.hintTeam === "A" ? "B" : "A";
+
+  if(state.roundIndex >= state.rounds){
+    showGameOver();
+  } else {
+    show("screen-play");
+    setupRound();
+  }
+}
+
+function showGameOver(){
+  const b = document.getElementById("finalBanner");
+  if(state.scoreA > state.scoreB) b.textContent = `🎉 الفائز: ${state.teamA} (${state.scoreA} نقطة)`;
+  else if(state.scoreB > state.scoreA) b.textContent = `🎉 الفائز: ${state.teamB} (${state.scoreB} نقطة)`;
+  else b.textContent = "🤝 تعادل!";
+  show("screen-over");
+}
+
+function show(id){
+  ["screen-setup","screen-wheel","screen-play","screen-result","screen-over"].forEach(s => {
+    document.getElementById(s).classList.toggle("hidden", s !== id);
+  });
+}
+</script>
+</body>
+</html>
