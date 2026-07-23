@@ -1375,15 +1375,12 @@ const WORD_BANK = [
 
 ];
 
-
-// 1️⃣ المتغيرات الأساسية
 let selectedGameMode = "classic";
 let state = {};
 let timerInterval = null;
 let timeRemaining = 0;
 let audioCtx = null;
 
-// 2️⃣ محرك الصوت
 function getAudioContext() {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -1428,7 +1425,6 @@ function playSuccessFx() {
   document.body.classList.add("success-effect");
 }
 
-// 3️⃣ اختيارات الأطوار والبدء
 function selectMode(mode, element) {
   selectedGameMode = mode;
   document.querySelectorAll('.mode-card, .mode-select-box, [onclick*="selectMode"]').forEach(el => el.classList.remove('active'));
@@ -1442,7 +1438,7 @@ function startGame(){
   const roundsEl = document.getElementById("rounds");
 
   const category = catEl ? catEl.value : "general";
-  const difficulty = diffEl ? diffEl.value : "medium"; // جلب الصعوبة المحددة
+  const difficulty = diffEl ? diffEl.value : "medium";
   const timePacing = paceEl ? paceEl.value : "normal";
   const rounds = roundsEl ? (parseInt(roundsEl.value) || 10) : 10;
 
@@ -1470,7 +1466,6 @@ function startGame(){
   updateTeamNamesDisplay();
   show("screen-wheel");
 }
-
 
 function updateTeamNamesDisplay() {
   const setTxt = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
@@ -1538,6 +1533,7 @@ function proceedToPlay(){
   show("screen-play");
   setupRound();
 }
+
 function getTimeDurations() {
   let previewTime = 30, hints = [30, 20, 10], stealTime = 10;
   if (state.timePacing === "relaxed") {
@@ -1573,7 +1569,13 @@ function setupRound(){
   }
 
   const preWord = document.getElementById("previewWordDisplay");
-  if(preWord) preWord.textContent = "🔒 اضغط هنا";
+  if(preWord) {
+    if(state.gameMode === "taboo") {
+      revealPreviewWord();
+    } else {
+      preWord.textContent = "🔒 اضغط هنا";
+    }
+  }
   
   const timerCap = document.getElementById("timerCaption");
   if(timerCap) timerCap.textContent = "ثانية للتفكير قبل بدء الجولة";
@@ -1614,23 +1616,12 @@ function setupTurn(){
   startTimer(duration, () => wrongGuess());
 }
 
-
 function getForbiddenWords(curr) {
   if (!curr || !curr.forbidden) return [];
-  
   const diff = state.difficulty || "medium";
-  
   if (diff === "easy") return curr.forbidden.slice(0, 2);    
   if (diff === "hard") return curr.forbidden.slice(0, 4);   
   return curr.forbidden.slice(0, 3);                        
-}
-
-  let count = 3; 
-  if (diff.includes("easy") || diff.includes("1") || diff === "سهل") count = 2;
-  else if (diff.includes("hard") || diff.includes("3") || diff === "صعب") count = 4;
-  else count = 3; // متوسط
-
-  return curr.forbidden.slice(0, count);
 }
 
 function revealWord(){
@@ -1676,7 +1667,20 @@ function revealPreviewWord(){
 
 function hidePreviewWord(){ 
   const preWord = document.getElementById("previewWordDisplay");
-  if(preWord) preWord.textContent = "🔒 اضغط هنا"; 
+  if(preWord) {
+    if(state.gameMode === "taboo") {
+      revealPreviewWord();
+    } else {
+      preWord.textContent = "🔒 اضغط هنا"; 
+    }
+  }
+}
+
+function hideWord(){
+  const wDisp = document.getElementById("wordDisplay");
+  if(wDisp) wDisp.textContent = "🔒 اضغط هنا";
+  const fBox = document.getElementById("forbiddenBox");
+  if(fBox) fBox.classList.add("hidden");
 }
 
 function startTimer(duration, onTimeout){
@@ -1833,4 +1837,3 @@ function show(id){
     if(el) el.classList.toggle("hidden", s !== id);
   });
 }
-</script>
