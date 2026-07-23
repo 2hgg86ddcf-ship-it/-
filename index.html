@@ -1611,6 +1611,20 @@ function setupTurn(){
   startTimer(duration, () => wrongGuess());
 }
 
+// دالة مساعدة لجلب عدد الكلمات المحظورة حسب الصعوبة
+function getForbiddenWords(curr) {
+  if (!curr || !curr.forbidden) return [];
+  const diff = state.difficulty || "medium";
+  
+  // سهل = كلمتين | متوسط = 3 كلمات | صعب = 4 كلمات (أو كل الكلمات)
+  let count = 3; 
+  if (diff === "easy") count = 2;
+  else if (diff === "medium") count = 3;
+  else if (diff === "hard") count = 4;
+
+  return curr.forbidden.slice(0, count);
+}
+
 function revealWord(){
   const curr = state.words[state.roundIndex];
   if(!curr) return;
@@ -1622,17 +1636,11 @@ function revealWord(){
     const fBox = document.getElementById("forbiddenBox");
     const fWords = document.getElementById("forbiddenWords");
     if(fWords && curr.forbidden) {
-      fWords.innerHTML = curr.forbidden.map(w => `<span class="forbidden-tag">${w}</span>`).join("");
+      const activeForbidden = getForbiddenWords(curr);
+      fWords.innerHTML = activeForbidden.map(w => `<span class="forbidden-tag">${w}</span>`).join("");
     }
     if(fBox) fBox.classList.remove("hidden");
   }
-}
-
-function hideWord(){
-  const wDisp = document.getElementById("wordDisplay");
-  if(wDisp) wDisp.textContent = "🔒 اضغط هنا";
-  const fBox = document.getElementById("forbiddenBox");
-  if(fBox) fBox.classList.add("hidden");
 }
 
 function revealPreviewWord(){ 
@@ -1643,7 +1651,8 @@ function revealPreviewWord(){
   if(!preWord) return;
 
   if(state.gameMode === "taboo" && curr.forbidden) {
-    const tagsHtml = curr.forbidden.map(w => `<span style="background:rgba(255,255,255,0.08); color:#fff; padding:6px 14px; border-radius:8px; margin:4px; display:inline-block; font-size:0.95rem;">${w}</span>`).join("");
+    const activeForbidden = getForbiddenWords(curr);
+    const tagsHtml = activeForbidden.map(w => `<span style="background:rgba(255,255,255,0.08); color:#fff; padding:6px 14px; border-radius:8px; margin:4px; display:inline-block; font-size:0.95rem;">${w}</span>`).join("");
     
     preWord.innerHTML = `
       <div style="font-size:1.6rem; font-weight:bold; margin-bottom:18px;">${curr.word}</div>
@@ -1656,6 +1665,7 @@ function revealPreviewWord(){
     preWord.textContent = curr.word;
   }
 }
+
 
 
 function hidePreviewWord(){ 
