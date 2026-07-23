@@ -1375,13 +1375,14 @@ const WORD_BANK = [
 ];
 
 
+// 1️⃣ المتغيرات الأساسية
 let selectedGameMode = "classic";
 let state = {};
 let timerInterval = null;
 let timeRemaining = 0;
 let audioCtx = null;
 
-// محرك الصوت الآمن للمتصفحات والآيفون
+// 2️⃣ محرك الصوت
 function getAudioContext() {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -1426,13 +1427,13 @@ function playSuccessFx() {
   document.body.classList.add("success-effect");
 }
 
+// 3️⃣ اختيارات الأطوار والبدء
 function selectMode(mode, element) {
   selectedGameMode = mode;
-  document.querySelectorAll('.mode-select-box').forEach(el => el.classList.remove('active'));
-  element.classList.add('active');
+  document.querySelectorAll('.mode-card, .mode-select-box, [onclick*="selectMode"]').forEach(el => el.classList.remove('active'));
+  if(element) element.classList.add('active');
 }
 
-// دالة البدء المحصنة من الأخطاء
 function startGame(){
   const catEl = document.getElementById("category");
   const diffEl = document.getElementById("difficulty");
@@ -1450,7 +1451,6 @@ function startGame(){
   const nameA = (teamAInput && teamAInput.value.trim()) || "الفريق الأحمر";
   const nameB = (teamBInput && teamBInput.value.trim()) || "الفريق الأخضر";
 
-  // التأكد من وجود مصفوفة الكلمات قبل الفلترة
   const sourceBank = (typeof WORD_BANK !== "undefined") ? WORD_BANK : [];
 
   let pool = sourceBank.filter(w => (category === "mix" || w.cat === category) && w.diff === difficulty);
@@ -1481,21 +1481,27 @@ function updateTeamNamesDisplay() {
 
 function openSettingsModal() {
   clearInterval(timerInterval);
-  document.getElementById("editTeamA").value = state.teamA;
-  document.getElementById("editTeamB").value = state.teamB;
-  document.getElementById("modal-settings").classList.remove("hidden");
+  const editA = document.getElementById("editTeamA");
+  const editB = document.getElementById("editTeamB");
+  if(editA) editA.value = state.teamA;
+  if(editB) editB.value = state.teamB;
+  const modal = document.getElementById("modal-settings");
+  if(modal) modal.classList.remove("hidden");
 }
 
 function closeSettingsModal() {
-  document.getElementById("modal-settings").classList.add("hidden");
+  const modal = document.getElementById("modal-settings");
+  if(modal) modal.classList.add("hidden");
   if(timeRemaining > 0) {
     startTimer(timeRemaining, () => wrongGuess());
   }
 }
 
 function saveSettings() {
-  state.teamA = document.getElementById("editTeamA").value.trim() || "الفريق الأحمر";
-  state.teamB = document.getElementById("editTeamB").value.trim() || "الفريق الأخضر";
+  const editA = document.getElementById("editTeamA");
+  const editB = document.getElementById("editTeamB");
+  state.teamA = (editA && editA.value.trim()) || "الفريق الأحمر";
+  state.teamB = (editB && editB.value.trim()) || "الفريق الأخضر";
   updateTeamNamesDisplay();
   
   const turnEl = document.getElementById("turnLabel");
@@ -1510,14 +1516,18 @@ function restartGameModal() { location.reload(); }
 function spinWheel(){
   const winner = Math.random() < 0.5 ? "A" : "B";
   const totalDeg = 1800 + (winner === "A" ? 90 : 270);
-  document.getElementById("wheel").style.transform = `rotate(${totalDeg}deg)`;
+  const wheel = document.getElementById("wheel");
+  if(wheel) wheel.style.transform = `rotate(${totalDeg}deg)`;
   state.hintTeam = winner;
 
   setTimeout(() => {
     const name = winner === "A" ? state.teamA : state.teamB;
-    document.getElementById("wheelResultBanner").textContent = `🎉 ${name} يبدأ أول!`;
-    document.getElementById("wheelResultArea").classList.remove("hidden");
-    document.getElementById("spinBtn").classList.add("hidden");
+    const banner = document.getElementById("wheelResultBanner");
+    const area = document.getElementById("wheelResultArea");
+    const spinBtn = document.getElementById("spinBtn");
+    if(banner) banner.textContent = `🎉 ${name} يبدأ أول!`;
+    if(area) area.classList.remove("hidden");
+    if(spinBtn) spinBtn.classList.add("hidden");
   }, 3300);
 }
 
@@ -1525,7 +1535,6 @@ function proceedToPlay(){
   show("screen-play");
   setupRound();
 }
-
 function getTimeDurations() {
   let previewTime = 30, hints = [30, 20, 10], stealTime = 10;
   if (state.timePacing === "relaxed") {
@@ -1538,26 +1547,40 @@ function getTimeDurations() {
 
 function setupRound(){
   state.hintNumber = 1;
-  document.getElementById("lapLabel").textContent = `الجولة ${state.roundIndex + 1} / ${state.rounds}`;
-  document.getElementById("sbPtsA").textContent = state.scoreA;
-  document.getElementById("sbPtsB").textContent = state.scoreB;
+  const lap = document.getElementById("lapLabel");
+  if(lap) lap.textContent = `الجولة ${state.roundIndex + 1} / ${state.rounds}`;
+  
+  const ptsA = document.getElementById("sbPtsA");
+  const ptsB = document.getElementById("sbPtsB");
+  if(ptsA) ptsA.textContent = state.scoreA;
+  if(ptsB) ptsB.textContent = state.scoreB;
 
   const modeBadge = document.getElementById("currentModeBadge");
-  if(state.gameMode === "charades") modeBadge.textContent = "🤐 طور ولا كلمة (تمثيل)";
-  else if(state.gameMode === "taboo") modeBadge.textContent = "🚫 طور لا تقولها (كلمات محظورة)";
-  else modeBadge.textContent = "🎤 طور كلمة التقليدي";
+  if(modeBadge) {
+    if(state.gameMode === "charades") modeBadge.textContent = "🤐 طور ولا كلمة (تمثيل)";
+    else if(state.gameMode === "taboo") modeBadge.textContent = "🚫 طور لا تقولها (كلمات محظورة)";
+    else modeBadge.textContent = "🎤 طور كلمة التقليدي";
+  }
 
   const teamName = state.hintTeam === "A" ? state.teamA : state.teamB;
   const turnEl = document.getElementById("turnLabel");
-  turnEl.textContent = `دور ${teamName}`;
-  turnEl.className = "team-turn " + (state.hintTeam === "A" ? "a" : "b");
+  if(turnEl) {
+    turnEl.textContent = `دور ${teamName}`;
+    turnEl.className = "team-turn " + (state.hintTeam === "A" ? "a" : "b");
+  }
 
-  document.getElementById("previewWordDisplay").textContent = "🔒 اضغط هنا";
-  document.getElementById("timerCaption").textContent = "ثانية للتفكير قبل بدء الجولة";
+  const preWord = document.getElementById("previewWordDisplay");
+  if(preWord) preWord.textContent = "🔒 اضغط هنا";
+  
+  const timerCap = document.getElementById("timerCaption");
+  if(timerCap) timerCap.textContent = "ثانية للتفكير قبل بدء الجولة";
 
-  document.getElementById("previewArea").classList.remove("hidden");
-  document.getElementById("hintArea").classList.add("hidden");
-  document.getElementById("stealArea").classList.add("hidden");
+  const pArea = document.getElementById("previewArea");
+  const hArea = document.getElementById("hintArea");
+  const sArea = document.getElementById("stealArea");
+  if(pArea) pArea.classList.remove("hidden");
+  if(hArea) hArea.classList.add("hidden");
+  if(sArea) sArea.classList.add("hidden");
 
   const times = getTimeDurations();
   startTimer(times.previewTime, () => startHintPhase());
@@ -1566,15 +1589,22 @@ function setupRound(){
 function skipPreview(){ startHintPhase(); }
 
 function startHintPhase(){
-  document.getElementById("previewArea").classList.add("hidden");
-  document.getElementById("hintArea").classList.remove("hidden");
+  const pArea = document.getElementById("previewArea");
+  const hArea = document.getElementById("hintArea");
+  if(pArea) pArea.classList.add("hidden");
+  if(hArea) hArea.classList.remove("hidden");
   setupTurn();
 }
 
 function setupTurn(){
-  document.getElementById("hintBadge").textContent = `المحاولة ${state.hintNumber} / 3`;
-  document.getElementById("timerCaption").textContent = "ثانية متبقية";
-  document.getElementById("wordDisplay").textContent = "🔒 اضغط هنا";
+  const hintB = document.getElementById("hintBadge");
+  if(hintB) hintB.textContent = `المحاولة ${state.hintNumber} / 3`;
+  
+  const timerCap = document.getElementById("timerCaption");
+  if(timerCap) timerCap.textContent = "ثانية متبقية";
+  
+  const wDisp = document.getElementById("wordDisplay");
+  if(wDisp) wDisp.textContent = "🔒 اضغط هنا";
 
   const times = getTimeDurations();
   const duration = times.hints[state.hintNumber - 1];
@@ -1583,43 +1613,51 @@ function setupTurn(){
 
 function revealWord(){
   const curr = state.words[state.roundIndex];
-  document.getElementById("wordDisplay").textContent = curr.word;
+  if(!curr) return;
+  const wDisp = document.getElementById("wordDisplay");
+  if(wDisp) wDisp.textContent = curr.word;
 
   if(state.gameMode === "taboo") {
     const fBox = document.getElementById("forbiddenBox");
     const fWords = document.getElementById("forbiddenWords");
-    fWords.innerHTML = curr.forbidden.map(w => `<span class="forbidden-tag">${w}</span>`).join("");
-    fBox.classList.remove("hidden");
+    if(fWords && curr.forbidden) fWords.innerHTML = curr.forbidden.map(w => `<span class="forbidden-tag">${w}</span>`).join("");
+    if(fBox) fBox.classList.remove("hidden");
   }
 }
 
 function hideWord(){
-  document.getElementById("wordDisplay").textContent = "🔒 اضغط هنا";
-  document.getElementById("forbiddenBox").classList.add("hidden");
+  const wDisp = document.getElementById("wordDisplay");
+  if(wDisp) wDisp.textContent = "🔒 اضغط هنا";
+  const fBox = document.getElementById("forbiddenBox");
+  if(fBox) fBox.classList.add("hidden");
 }
 
 function revealPreviewWord(){ 
   const curr = state.words[state.roundIndex];
+  if(!curr) return;
   let text = curr.word;
-  if(state.gameMode === "taboo") {
+  if(state.gameMode === "taboo" && curr.forbidden) {
     text += "\n\n🚫 المحظور:\n" + curr.forbidden.join(" - ");
   }
-  document.getElementById("previewWordDisplay").textContent = text; 
+  const preWord = document.getElementById("previewWordDisplay");
+  if(preWord) preWord.textContent = text; 
 }
 
 function hidePreviewWord(){ 
-  document.getElementById("previewWordDisplay").textContent = "🔒 اضغط هنا"; 
+  const preWord = document.getElementById("previewWordDisplay");
+  if(preWord) preWord.textContent = "🔒 اضغط هنا"; 
 }
 
 function startTimer(duration, onTimeout){
   clearInterval(timerInterval);
   timeRemaining = duration;
-  document.getElementById("timerDisplay").textContent = timeRemaining;
+  const tDisp = document.getElementById("timerDisplay");
+  if(tDisp) tDisp.textContent = timeRemaining;
   document.body.classList.remove("time-warning");
 
   timerInterval = setInterval(() => {
     timeRemaining--;
-    document.getElementById("timerDisplay").textContent = timeRemaining;
+    if(tDisp) tDisp.textContent = timeRemaining;
 
     if(timeRemaining <= 5 && timeRemaining > 0){
       document.body.classList.add("time-warning");
@@ -1647,7 +1685,8 @@ function confirmGuessed(){
   if(state.hintTeam === "A") state.scoreA += pts;
   else state.scoreB += pts;
 
-  state.history.push({ round: state.roundIndex + 1, word: state.words[state.roundIndex].word, winner, pts });
+  const currentWord = state.words[state.roundIndex] ? state.words[state.roundIndex].word : "";
+  state.history.push({ round: state.roundIndex + 1, word: currentWord, winner, pts });
   showRoundResult(`🏆 ${winner} يابوها صح بالمحاولة (${state.hintNumber})! +${pts} نقاط`);
 }
 
@@ -1668,15 +1707,19 @@ function burnWord(){
   clearInterval(timerInterval);
   document.body.classList.remove("time-warning");
   playWrongFx();
-  state.history.push({ round: state.roundIndex + 1, word: state.words[state.roundIndex].word, winner: "🔥 ملغاة", pts: 0 });
+  const currentWord = state.words[state.roundIndex] ? state.words[state.roundIndex].word : "";
+  state.history.push({ round: state.roundIndex + 1, word: currentWord, winner: "🔥 ملغاة", pts: 0 });
   showRoundResult("🔥 قيلت الكلمة بالغلط! الجولة تلغى ومحد ياخذ نقاط");
 }
 
 function startStealPhase(){
   const stealTeam = state.hintTeam === "A" ? state.teamB : state.teamA;
-  document.getElementById("hintArea").classList.add("hidden");
-  document.getElementById("stealArea").classList.remove("hidden");
-  document.getElementById("stealBanner").textContent = `🕵️ دور ${stealTeam} يسرقون النقطة!`;
+  const hArea = document.getElementById("hintArea");
+  const sArea = document.getElementById("stealArea");
+  const sBanner = document.getElementById("stealBanner");
+  if(hArea) hArea.classList.add("hidden");
+  if(sArea) sArea.classList.remove("hidden");
+  if(sBanner) sBanner.textContent = `🕵️ دور ${stealTeam} يسرقون النقطة!`;
   
   const times = getTimeDurations();
   startTimer(times.stealTime, () => confirmSteal(false));
@@ -1688,24 +1731,28 @@ function confirmSteal(correct){
 
   const stealTeamId = state.hintTeam === "A" ? "B" : "A";
   const stealTeamName = stealTeamId === "A" ? state.teamA : state.teamB;
+  const currentWord = state.words[state.roundIndex] ? state.words[state.roundIndex].word : "";
 
   if(correct){
     playSuccessFx();
     if(stealTeamId === "A") state.scoreA += 2;
     else state.scoreB += 2;
-    state.history.push({ round: state.roundIndex + 1, word: state.words[state.roundIndex].word, winner: stealTeamName, pts: 2 });
+    state.history.push({ round: state.roundIndex + 1, word: currentWord, winner: stealTeamName, pts: 2 });
     showRoundResult(`🕵️ ${stealTeamName} سرقوا النقطة! +2 نقاط`);
   } else {
     playWrongFx();
-    state.history.push({ round: state.roundIndex + 1, word: state.words[state.roundIndex].word, winner: "ولا أحد", pts: 0 });
+    state.history.push({ round: state.roundIndex + 1, word: currentWord, winner: "ولا أحد", pts: 0 });
     showRoundResult("❌ محد عرف الكلمة، هالجولة بدون نقاط");
   }
 }
 
 function showRoundResult(msg){
-  document.getElementById("resultLapLabel").textContent = `نتيجة الجولة ${state.roundIndex + 1}`;
-  document.getElementById("resultWord").textContent = state.words[state.roundIndex].word;
-  document.getElementById("resultBanner").textContent = msg;
+  const rLap = document.getElementById("resultLapLabel");
+  const rWord = document.getElementById("resultWord");
+  const rBanner = document.getElementById("resultBanner");
+  if(rLap) rLap.textContent = `نتيجة الجولة ${state.roundIndex + 1}`;
+  if(rWord && state.words[state.roundIndex]) rWord.textContent = state.words[state.roundIndex].word;
+  if(rBanner) rBanner.textContent = msg;
   show("screen-result");
 }
 
@@ -1722,13 +1769,17 @@ function nextRound(){
 }
 
 function showGameOver(){
-  document.getElementById("finalPtsA").textContent = state.scoreA;
-  document.getElementById("finalPtsB").textContent = state.scoreB;
+  const fPtsA = document.getElementById("finalPtsA");
+  const fPtsB = document.getElementById("finalPtsB");
+  if(fPtsA) fPtsA.textContent = state.scoreA;
+  if(fPtsB) fPtsB.textContent = state.scoreB;
 
   const banner = document.getElementById("finalBanner");
-  if(state.scoreA > state.scoreB) banner.textContent = `🎉 الفائز: ${state.teamA}!`;
-  else if(state.scoreB > state.scoreA) banner.textContent = `🎉 الفائز: ${state.teamB}!`;
-  else banner.textContent = "🤝 تعادل تام بين الفريقين!";
+  if(banner){
+    if(state.scoreA > state.scoreB) banner.textContent = `🎉 الفائز: ${state.teamA}!`;
+    else if(state.scoreB > state.scoreA) banner.textContent = `🎉 الفائز: ${state.teamB}!`;
+    else banner.textContent = "🤝 تعادل تام بين الفريقين!";
+  }
 
   const tbody = document.getElementById("historyBody");
   if(tbody) {
@@ -1751,3 +1802,4 @@ function show(id){
     if(el) el.classList.toggle("hidden", s !== id);
   });
 }
+</script>
