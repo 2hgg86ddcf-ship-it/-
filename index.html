@@ -1611,16 +1611,16 @@ function setupTurn(){
   startTimer(duration, () => wrongGuess());
 }
 
-// دالة مساعدة لجلب عدد الكلمات المحظورة حسب الصعوبة
+// دالة جلب عدد الكلمات المحظورة بحجم مناسب وحسب الصعوبة
 function getForbiddenWords(curr) {
   if (!curr || !curr.forbidden) return [];
-  const diff = state.difficulty || "medium";
+  // فحص مختلف المسميات المحتملة لمتغير الصعوبة في مشروعات الجافاسكريبت
+  const diff = (state.difficulty || state.difficultyLevel || state.level || "medium").toString().toLowerCase();
   
-  // سهل = كلمتين | متوسط = 3 كلمات | صعب = 4 كلمات (أو كل الكلمات)
   let count = 3; 
-  if (diff === "easy") count = 2;
-  else if (diff === "medium") count = 3;
-  else if (diff === "hard") count = 4;
+  if (diff.includes("easy") || diff.includes("1") || diff === "سهل") count = 2;
+  else if (diff.includes("hard") || diff.includes("3") || diff === "صعب") count = 4;
+  else count = 3; // متوسط
 
   return curr.forbidden.slice(0, count);
 }
@@ -1652,19 +1652,21 @@ function revealPreviewWord(){
 
   if(state.gameMode === "taboo" && curr.forbidden) {
     const activeForbidden = getForbiddenWords(curr);
-    const tagsHtml = activeForbidden.map(w => `<span style="background:rgba(255,255,255,0.08); color:#fff; padding:6px 14px; border-radius:8px; margin:4px; display:inline-block; font-size:0.95rem;">${w}</span>`).join("");
+    const tagsHtml = activeForbidden.map(w => `<span style="background:rgba(255,255,255,0.08); color:#fff; padding:3px 8px; border-radius:6px; margin:2px; display:inline-block; font-size:0.8rem;">${w}</span>`).join("");
     
+    // تم تصغير حجم الخط، المسافات، والبوكس بالكامل لكي لا يغطي الأزرار العلويّة
     preWord.innerHTML = `
-      <div style="font-size:1.6rem; font-weight:bold; margin-bottom:18px;">${curr.word}</div>
-      <div style="background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.4); border-radius:12px; padding:12px; margin-top:10px;">
-        <div style="color:#ef4444; font-size:0.95rem; font-weight:bold; margin-bottom:10px;">⚠️ ممنوع تقول هالمصطلحات:</div>
-        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:4px;">${tagsHtml}</div>
+      <div style="font-size:1.3rem; font-weight:bold; margin-bottom:8px;">${curr.word}</div>
+      <div style="background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.4); border-radius:8px; padding:6px 8px; margin-top:4px;">
+        <div style="color:#ef4444; font-size:0.8rem; font-weight:bold; margin-bottom:4px;">⚠️ ممنوع تقول هالمصطلحات:</div>
+        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:2px;">${tagsHtml}</div>
       </div>
     `;
   } else {
     preWord.textContent = curr.word;
   }
 }
+
 
 
 
