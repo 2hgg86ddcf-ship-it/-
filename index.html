@@ -128,37 +128,42 @@ body {
     background: var(--amber); color: var(--asphalt); text-align: center; font-weight: 900; padding: 6px 12px; border-radius: 20px; font-size: 13px; margin: 0 auto 12px; width: fit-content;
   }
 
-  .reveal-box{
-    background:var(--asphalt-2); border:2px dashed var(--line); border-radius:14px; padding:24px 18px; text-align:center; cursor:pointer; margin-bottom:18px; user-select:none; white-space: pre-line;
-  }
-  .reveal-box .word{ font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:26px; color:var(--off-white); }
-  .reveal-box .tap-label{ color:#8a8b96; font-size:14px; margin-top:6px; }
+.reveal-box{
+  background:var(--asphalt-2); border:2px dashed var(--line); border-radius:14px; padding:24px 18px; text-align:center; cursor:pointer; margin-bottom:18px; user-select:none; white-space: pre-line;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.reveal-box .word{ font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:26px; color:var(--off-white); }
+.reveal-box .tap-label{ color:#8a8b96; font-size:14px; margin-top:6px; }
 
-  .forbidden-list { margin-top: 15px; background: rgba(230,57,70,0.15); border: 1px solid var(--racing-red); border-radius: 8px; padding: 10px; }
-  .forbidden-title { color: var(--racing-red); font-weight: 700; font-size: 12px; margin-bottom: 6px; }
-  .forbidden-words { color: var(--off-white); font-weight: bold; font-size: 14px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-  .forbidden-tag { background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 6px; }
+.forbidden-list { margin-top: 15px; background: rgba(230,57,70,0.15); border: 1px solid var(--racing-red); border-radius: 8px; padding: 10px; }
+.forbidden-title { color: var(--racing-red); font-weight: 700; font-size: 12px; margin-bottom: 6px; }
+.forbidden-words { color: var(--off-white); font-weight: bold; font-size: 14px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.forbidden-tag { background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 6px; }
 
-  .score-board{ display:flex; justify-content:space-between; background:var(--asphalt-2); border-radius:12px; padding:12px 16px; margin-bottom:16px; font-family:'Segoe UI','Tahoma',sans-serif; }
-  .score-board .team{ text-align:center; flex:1; }
-  .score-board .team .name{ font-size:12px; color:#9a9ba5; }
-  .score-board .team .pts{ font-size:22px; font-weight:900; }
-  .score-board .divider{ width:1px; background:var(--line); }
+.score-board{ display:flex; justify-content:space-between; background:var(--asphalt-2); border-radius:12px; padding:12px 16px; margin-bottom:16px; font-family:'Segoe UI','Tahoma',sans-serif; }
+.score-board .team{ text-align:center; flex:1; }
+.score-board .team .name{ font-size:12px; color:#9a9ba5; }
+.score-board .team .pts{ font-size:22px; font-weight:900; }
+.score-board .divider{ width:1px; background:var(--line); }
 
-  .timer-display{ text-align:center; font-family:'Consolas','Courier New',monospace; font-weight:900; font-size:56px; color:var(--go-green); line-height:1; margin-bottom:6px; }
-  .timer-caption{ text-align:center; font-size:11px; color:#9a9ba5; margin-bottom:14px; }
-  .hint-badge{ text-align:center; font-family:'Consolas','Courier New',monospace; font-weight:700; font-size:13px; color:var(--amber); margin-bottom:8px; }
+.timer-display{ text-align:center; font-family:'Consolas','Courier New',monospace; font-weight:900; font-size:56px; color:var(--go-green); line-height:1; margin-bottom:6px; }
+.timer-caption{ text-align:center; font-size:11px; color:#9a9ba5; margin-bottom:14px; }
+.hint-badge{ text-align:center; font-family:'Consolas','Courier New',monospace; font-weight:700; font-size:13px; color:var(--amber); margin-bottom:8px; }
 
-  .steal-banner{ text-align:center; font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:18px; color:var(--go-green); background:rgba(58,170,53,0.12); border:1px solid rgba(58,170,53,0.35); border-radius:12px; padding:14px; margin-bottom:14px; }
-  .result-banner{ text-align:center; font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:20px; padding:14px; border-radius:12px; margin-bottom:16px; }
-  .result-banner.win{ background:rgba(58,170,53,0.15); color:var(--go-green); border:1px solid rgba(58,170,53,0.4); }
+.steal-banner{ text-align:center; font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:18px; color:var(--go-green); background:rgba(58,170,53,0.12); border:1px solid rgba(58,170,53,0.35); border-radius:12px; padding:14px; margin-bottom:14px; }
+.result-banner{ text-align:center; font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:20px; padding:14px; border-radius:12px; margin-bottom:16px; }
+.result-banner.win{ background:rgba(58,170,53,0.15); color:var(--go-green); border:1px solid rgba(58,170,53,0.4); }
 
-  .hidden{ display:none !important; }
-  .wheel{ width:240px; height:240px; border-radius:50%; background: conic-gradient(var(--racing-red) 0deg 180deg, var(--go-green) 180deg 360deg); position:relative; transition: transform 3.2s cubic-bezier(.12,.67,.10,1); border:5px solid var(--asphalt-2); }
-  .wheel-pointer{ width:0; height:0; border-left:14px solid transparent; border-right:14px solid transparent; border-top:22px solid var(--amber); margin:0 auto -2px; position:relative; z-index:2; }
-  .wheel-label{ position:absolute; top:50%; width:80px; text-align:center; font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:12px; color:white; transform: translateY(-50%); word-break:break-word; }
-  .wheel-label.a{ right:10px; }
-  .wheel-label.b{ left:10px; }
+.hidden{ display:none !important; }
+.wheel{ width:240px; height:240px; border-radius:50%; background: conic-gradient(var(--racing-red) 0deg 180deg, var(--go-green) 180deg 360deg); position:relative; transition: transform 3.2s cubic-bezier(.12,.67,.10,1); border:5px solid var(--asphalt-2); }
+.wheel-pointer{ width:0; height:0; border-left:14px solid transparent; border-right:14px solid transparent; border-top:22px solid var(--amber); margin:0 auto -2px; position:relative; z-index:2; }
+.wheel-label{ position:absolute; top:50%; width:80px; text-align:center; font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:12px; color:white; transform: translateY(-50%); word-break:break-word; }
+.wheel-label.a{ right:10px; }
+.wheel-label.b{ left:10px; }
 </style>
 </head>
 <body>
