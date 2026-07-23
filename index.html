@@ -1390,7 +1390,7 @@ function getAudioContext() {
   return audioCtx;
 }
 
-function playBeep(freq = 440, duration = 0.1) {
+function playBeep(freq = 440, duration = 0.15) {
   try {
     const ctx = getAudioContext();
     if (!ctx) return;
@@ -1402,32 +1402,12 @@ function playBeep(freq = 440, duration = 0.1) {
     osc.start();
     gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
     osc.stop(ctx.currentTime + duration);
-  } catch (e) { console.log(e); }
-}
-
-function playWrongFx() {
-  playBeep(220, 0.25);
-  if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
-  const card = document.getElementById("playCard");
-  if(card) {
-    card.classList.remove("shake-effect");
-    void card.offsetWidth;
-    card.classList.add("shake-effect");
-  }
-}
-
-function playSuccessFx() {
-  playBeep(880, 0.12);
-  setTimeout(() => playBeep(1200, 0.2), 100);
-  if(navigator.vibrate) navigator.vibrate(80);
-  document.body.classList.remove("success-effect");
-  void document.body.offsetWidth;
-  document.body.classList.add("success-effect");
+  } catch(e){}
 }
 
 function selectMode(mode, element) {
   selectedGameMode = mode;
-  document.querySelectorAll('.mode-card, .mode-select-box, [onclick*="selectMode"]').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.mode-card, .mode-select-box').forEach(el => el.classList.remove('active'));
   if(element) element.classList.add('active');
 }
 
@@ -1463,53 +1443,18 @@ function startGame(){
     hintNumber: 1, history: []
   };
 
-  updateTeamNamesDisplay();
+  const nameAEl = document.getElementById("wheelLabelA");
+  const nameBEl = document.getElementById("wheelLabelB");
+  const sbNameA = document.getElementById("sbNameA");
+  const sbNameB = document.getElementById("sbNameB");
+  
+  if(nameAEl) nameAEl.textContent = nameA;
+  if(nameBEl) nameBEl.textContent = nameB;
+  if(sbNameA) sbNameA.textContent = nameA;
+  if(sbNameB) sbNameB.textContent = nameB;
+
   show("screen-wheel");
 }
-
-function updateTeamNamesDisplay() {
-  const setTxt = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
-  setTxt("wheelLabelA", state.teamA);
-  setTxt("wheelLabelB", state.teamB);
-  setTxt("sbNameA", state.teamA);
-  setTxt("sbNameB", state.teamB);
-  setTxt("finalNameA", state.teamA);
-  setTxt("finalNameB", state.teamB);
-}
-
-function openSettingsModal() {
-  clearInterval(timerInterval);
-  const editA = document.getElementById("editTeamA");
-  const editB = document.getElementById("editTeamB");
-  if(editA) editA.value = state.teamA;
-  if(editB) editB.value = state.teamB;
-  const modal = document.getElementById("modal-settings");
-  if(modal) modal.classList.remove("hidden");
-}
-
-function closeSettingsModal() {
-  const modal = document.getElementById("modal-settings");
-  if(modal) modal.classList.add("hidden");
-  if(timeRemaining > 0) {
-    startTimer(timeRemaining, () => wrongGuess());
-  }
-}
-
-function saveSettings() {
-  const editA = document.getElementById("editTeamA");
-  const editB = document.getElementById("editTeamB");
-  state.teamA = (editA && editA.value.trim()) || "الفريق الأحمر";
-  state.teamB = (editB && editB.value.trim()) || "الفريق الأخضر";
-  updateTeamNamesDisplay();
-  
-  const turnEl = document.getElementById("turnLabel");
-  const currentTeamName = state.hintTeam === "A" ? state.teamA : state.teamB;
-  if(turnEl) turnEl.textContent = `دور ${currentTeamName}`;
-
-  closeSettingsModal();
-}
-
-function restartGameModal() { location.reload(); }
 
 function spinWheel(){
   const winner = Math.random() < 0.5 ? "A" : "B";
@@ -1555,18 +1500,24 @@ function setupRound(){
   if(ptsB) ptsB.textContent = state.scoreB;
 
   const modeBadge = document.getElementById("currentModeBadge");
+  const turnHint = document.getElementById("turnHint");
+  
   if(modeBadge) {
-    if(state.gameMode === "charades") modeBadge.textContent = "🤐 طور ولا كلمة (تمثيل)";
-    else if(state.gameMode === "taboo") modeBadge.textContent = "🚫 طور لا تقولها (كلمات محظورة)";
-    else modeBadge.textContent = "🎤 طور كلمة التقليدي";
+    if(state.gameMode === "charades") {
+      modeBadge.textContent = "🤐 طور ولا كلمة (تمثيل)";
+      if(turnHint) turnHint.textContent = "ممنوع تتكلم أو تطلع أي صوت! 🤫";
+    } else if(state.gameMode === "taboo") {
+      modeBadge.textContent = "🚫 طور لا تقولها (كلمات محظورة)";
+      if(turnHint) turnHint.textContent = "اشرح الكلمة بدون ما تقول الكلمات المحظورة!";
+    } else {
+      modeBadge.textContent = "🎤 طور كلمة التقليدي";
+      if(turnHint) turnHint.textContent = "اعطِ تلميح كلمة واحدة فقط!";
+    }
   }
 
   const teamName = state.hintTeam === "A" ? state.teamA : state.teamB;
   const turnEl = document.getElementById("turnLabel");
-  if(turnEl) {
-    turnEl.textContent = `دور ${teamName}`;
-    turnEl.className = "team-turn " + (state.hintTeam === "A" ? "a" : "b");
-  }
+  if(turnEl) turnEl.textContent = `دور ${teamName}`;
 
   const preWord = document.getElementById("previewWordDisplay");
   if(preWord) {
@@ -1576,9 +1527,6 @@ function setupRound(){
       preWord.textContent = "🔒 اضغط هنا";
     }
   }
-  
-  const timerCap = document.getElementById("timerCaption");
-  if(timerCap) timerCap.textContent = "ثانية للتفكير قبل بدء الجولة";
 
   const pArea = document.getElementById("previewArea");
   const hArea = document.getElementById("hintArea");
@@ -1604,9 +1552,6 @@ function startHintPhase(){
 function setupTurn(){
   const hintB = document.getElementById("hintBadge");
   if(hintB) hintB.textContent = `المحاولة ${state.hintNumber} / 3`;
-  
-  const timerCap = document.getElementById("timerCaption");
-  if(timerCap) timerCap.textContent = "ثانية متبقية";
   
   const wDisp = document.getElementById("wordDisplay");
   if(wDisp) wDisp.textContent = "🔒 اضغط هنا";
@@ -1665,17 +1610,6 @@ function revealPreviewWord(){
   }
 }
 
-function hidePreviewWord(){ 
-  const preWord = document.getElementById("previewWordDisplay");
-  if(preWord) {
-    if(state.gameMode === "taboo") {
-      revealPreviewWord();
-    } else {
-      preWord.textContent = "🔒 اضغط هنا"; 
-    }
-  }
-}
-
 function hideWord(){
   const wDisp = document.getElementById("wordDisplay");
   if(wDisp) wDisp.textContent = "🔒 اضغط هنا";
@@ -1683,9 +1617,9 @@ function hideWord(){
   if(fBox) fBox.classList.add("hidden");
 }
 
-function startTimer(duration, onTimeout){
+function startTimer(sec){
   clearInterval(timerInterval);
-  timeRemaining = duration;
+  timeRemaining = sec;
   const tDisp = document.getElementById("timerDisplay");
   if(tDisp) tDisp.textContent = timeRemaining;
   document.body.classList.remove("time-warning");
@@ -1694,17 +1628,17 @@ function startTimer(duration, onTimeout){
     timeRemaining--;
     if(tDisp) tDisp.textContent = timeRemaining;
 
-    if(timeRemaining <= 5 && timeRemaining > 0){
+    if(timeRemaining <= 5 && timeRemaining > 0) {
       document.body.classList.add("time-warning");
       playBeep(600, 0.1);
-      if(navigator.vibrate) navigator.vibrate(150);
+      if(navigator.vibrate) navigator.vibrate(200);
     }
 
-    if(timeRemaining <= 0){
+    if(timeRemaining <= 0) {
       clearInterval(timerInterval);
       document.body.classList.remove("time-warning");
       playBeep(300, 0.4);
-      onTimeout();
+      wrongGuess();
     }
   }, 1000);
 }
@@ -1712,82 +1646,35 @@ function startTimer(duration, onTimeout){
 function confirmGuessed(){
   clearInterval(timerInterval);
   document.body.classList.remove("time-warning");
-  playSuccessFx();
   
   const pts = state.hintNumber === 1 ? 3 : (state.hintNumber === 2 ? 2 : 1);
-  const winner = state.hintTeam === "A" ? state.teamA : state.teamB;
-  
   if(state.hintTeam === "A") state.scoreA += pts;
   else state.scoreB += pts;
-
-  const currentWord = state.words[state.roundIndex] ? state.words[state.roundIndex].word : "";
-  state.history.push({ round: state.roundIndex + 1, word: currentWord, winner, pts });
-  showRoundResult(`🏆 ${winner} يابوها صح بالمحاولة (${state.hintNumber})! +${pts} نقاط`);
+  
+  showRoundResult(true, pts);
 }
 
 function wrongGuess(){
   clearInterval(timerInterval);
   document.body.classList.remove("time-warning");
-  playWrongFx();
 
   if(state.hintNumber >= 3){
-    startStealPhase();
+    showRoundResult(false, 0);
   } else {
     state.hintNumber++;
     setupTurn();
   }
 }
 
-function burnWord(){
-  clearInterval(timerInterval);
-  document.body.classList.remove("time-warning");
-  playWrongFx();
-  const currentWord = state.words[state.roundIndex] ? state.words[state.roundIndex].word : "";
-  state.history.push({ round: state.roundIndex + 1, word: currentWord, winner: "🔥 ملغاة", pts: 0 });
-  showRoundResult("🔥 قيلت الكلمة بالغلط! الجولة تلغى ومحد ياخذ نقاط");
-}
-
-function startStealPhase(){
-  const stealTeam = state.hintTeam === "A" ? state.teamB : state.teamA;
-  const hArea = document.getElementById("hintArea");
-  const sArea = document.getElementById("stealArea");
-  const sBanner = document.getElementById("stealBanner");
-  if(hArea) hArea.classList.add("hidden");
-  if(sArea) sArea.classList.remove("hidden");
-  if(sBanner) sBanner.textContent = `🕵️ دور ${stealTeam} يسرقون النقطة!`;
-  
-  const times = getTimeDurations();
-  startTimer(times.stealTime, () => confirmSteal(false));
-}
-
-function confirmSteal(correct){
-  clearInterval(timerInterval);
-  document.body.classList.remove("time-warning");
-
-  const stealTeamId = state.hintTeam === "A" ? "B" : "A";
-  const stealTeamName = stealTeamId === "A" ? state.teamA : state.teamB;
-  const currentWord = state.words[state.roundIndex] ? state.words[state.roundIndex].word : "";
-
-  if(correct){
-    playSuccessFx();
-    if(stealTeamId === "A") state.scoreA += 2;
-    else state.scoreB += 2;
-    state.history.push({ round: state.roundIndex + 1, word: currentWord, winner: stealTeamName, pts: 2 });
-    showRoundResult(`🕵️ ${stealTeamName} سرقوا النقطة! +2 نقاط`);
-  } else {
-    playWrongFx();
-    state.history.push({ round: state.roundIndex + 1, word: currentWord, winner: "ولا أحد", pts: 0 });
-    showRoundResult("❌ محد عرف الكلمة، هالجولة بدون نقاط");
-  }
-}
-
-function showRoundResult(msg){
-  const rLap = document.getElementById("resultLapLabel");
+function showRoundResult(win, pts){
+  const name = state.hintTeam === "A" ? state.teamA : state.teamB;
   const rWord = document.getElementById("resultWord");
   const rBanner = document.getElementById("resultBanner");
-  if(rLap) rLap.textContent = `نتيجة الجولة ${state.roundIndex + 1}`;
+  
   if(rWord && state.words[state.roundIndex]) rWord.textContent = state.words[state.roundIndex].word;
-  if(rBanner) rBanner.textContent = msg;
+  if(rBanner) {
+    rBanner.textContent = win ? `🏆 ${name} جاوبوا صح! (+${pts} نقاط)` : `❌ لأسف ما عرفوها!`;
+  }
   show("screen-result");
 }
 
@@ -1804,30 +1691,12 @@ function nextRound(){
 }
 
 function showGameOver(){
-  const fPtsA = document.getElementById("finalPtsA");
-  const fPtsB = document.getElementById("finalPtsB");
-  if(fPtsA) fPtsA.textContent = state.scoreA;
-  if(fPtsB) fPtsB.textContent = state.scoreB;
-
-  const banner = document.getElementById("finalBanner");
-  if(banner){
-    if(state.scoreA > state.scoreB) banner.textContent = `🎉 الفائز: ${state.teamA}!`;
-    else if(state.scoreB > state.scoreA) banner.textContent = `🎉 الفائز: ${state.teamB}!`;
-    else banner.textContent = "🤝 تعادل تام بين الفريقين!";
+  const b = document.getElementById("finalBanner");
+  if(b) {
+    if(state.scoreA > state.scoreB) b.textContent = `🎉 الفائز: ${state.teamA} (${state.scoreA} نقطة)`;
+    else if(state.scoreB > state.scoreA) b.textContent = `🎉 الفائز: ${state.teamB} (${state.scoreB} نقطة)`;
+    else b.textContent = "🤝 تعادل!";
   }
-
-  const tbody = document.getElementById("historyBody");
-  if(tbody) {
-    tbody.innerHTML = state.history.map(h => `
-      <tr style="border-bottom:1px solid var(--line);">
-        <td style="padding:8px 6px;">${h.round}</td>
-        <td style="padding:8px 6px; color:var(--amber);">${h.word}</td>
-        <td style="padding:8px 6px; font-weight:bold;">${h.winner}</td>
-        <td style="padding:8px 6px;">${h.pts > 0 ? "+" + h.pts : "0"}</td>
-      </tr>
-    `).join("");
-  }
-
   show("screen-over");
 }
 
