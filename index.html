@@ -1379,19 +1379,15 @@ let selectedGameMode = "classic";
 let state = {};
 let timerInterval = null;
 let timeRemaining = 0;
-
 let audioCtx = null;
 
+// محرك الصوت الآمن للمتصفحات والآيفون
 function getAudioContext() {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (AudioContextClass) {
-      audioCtx = new AudioContextClass();
-    }
+    if (AudioContextClass) audioCtx = new AudioContextClass();
   }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 }
 
@@ -1399,31 +1395,26 @@ function playBeep(freq = 440, duration = 0.1) {
   try {
     const ctx = getAudioContext();
     if (!ctx) return;
-    
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    
     osc.connect(gain);
     gain.connect(ctx.destination);
-    
     osc.frequency.value = freq;
     osc.start();
-    
     gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
     osc.stop(ctx.currentTime + duration);
-  } catch (e) {
-    console.log(e);
-  }
+  } catch (e) { console.log(e); }
 }
-
 
 function playWrongFx() {
   playBeep(220, 0.25);
   if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
   const card = document.getElementById("playCard");
-  card.classList.remove("shake-effect");
-  void card.offsetWidth;
-  card.classList.add("shake-effect");
+  if(card) {
+    card.classList.remove("shake-effect");
+    void card.offsetWidth;
+    card.classList.add("shake-effect");
+  }
 }
 
 function playSuccessFx() {
@@ -1441,18 +1432,30 @@ function selectMode(mode, element) {
   element.classList.add('active');
 }
 
+// دالة البدء المحصنة من الأخطاء
 function startGame(){
-  const category = document.getElementById("category").value;
-  const difficulty = document.getElementById("difficulty").value;
-  const timePacing = document.getElementById("timePacing").value;
-  const rounds = parseInt(document.getElementById("rounds").value);
+  const catEl = document.getElementById("category");
+  const diffEl = document.getElementById("difficulty");
+  const paceEl = document.getElementById("timePacing");
+  const roundsEl = document.getElementById("rounds");
 
-  const nameA = document.getElementById("teamA").value.trim() || "الفريق الأحمر";
-  const nameB = document.getElementById("teamB").value.trim() || "الفريق الأخضر";
+  const category = catEl ? catEl.value : "general";
+  const difficulty = diffEl ? diffEl.value : "hard";
+  const timePacing = paceEl ? paceEl.value : "normal";
+  const rounds = roundsEl ? (parseInt(roundsEl.value) || 10) : 10;
 
-  let pool = WORD_BANK.filter(w => (category === "mix" || w.cat === category) && w.diff === difficulty);
-  if(pool.length < rounds) pool = WORD_BANK;
-  pool = pool.sort(() => Math.random() - 0.5).slice(0, rounds);
+  const teamAInput = document.getElementById("teamA");
+  const teamBInput = document.getElementById("teamB");
+
+  const nameA = (teamAInput && teamAInput.value.trim()) || "الفريق الأحمر";
+  const nameB = (teamBInput && teamBInput.value.trim()) || "الفريق الأخضر";
+
+  // التأكد من وجود مصفوفة الكلمات قبل الفلترة
+  const sourceBank = (typeof WORD_BANK !== "undefined") ? WORD_BANK : [];
+
+  let pool = sourceBank.filter(w => (category === "mix" || w.cat === category) && w.diff === difficulty);
+  if(!pool || pool.length === 0) pool = sourceBank;
+  pool = [...pool].sort(() => Math.random() - 0.5).slice(0, rounds);
 
   state = {
     gameMode: selectedGameMode,
@@ -1467,12 +1470,13 @@ function startGame(){
 }
 
 function updateTeamNamesDisplay() {
-  document.getElementById("wheelLabelA").textContent = state.teamA;
-  document.getElementById("wheelLabelB").textContent = state.teamB;
-  document.getElementById("sbNameA").textContent = state.teamA;
-  document.getElementById("sbNameB").textContent = state.teamB;
-  document.getElementById("finalNameA").textContent = state.teamA;
-  document.getElementById("finalNameB").textContent = state.teamB;
+  const setTxt = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
+  setTxt("wheelLabelA", state.teamA);
+  setTxt("wheelLabelB", state.teamB);
+  setTxt("sbNameA", state.teamA);
+  setTxt("sbNameB", state.teamB);
+  setTxt("finalNameA", state.teamA);
+  setTxt("finalNameB", state.teamB);
 }
 
 function openSettingsModal() {
@@ -1496,14 +1500,12 @@ function saveSettings() {
   
   const turnEl = document.getElementById("turnLabel");
   const currentTeamName = state.hintTeam === "A" ? state.teamA : state.teamB;
-  turnEl.textContent = `دور ${currentTeamName}`;
+  if(turnEl) turnEl.textContent = `دور ${currentTeamName}`;
 
   closeSettingsModal();
 }
 
-function restartGameModal() {
-  location.reload();
-}
+function restartGameModal() { location.reload(); }
 
 function spinWheel(){
   const winner = Math.random() < 0.5 ? "A" : "B";
@@ -1525,20 +1527,12 @@ function proceedToPlay(){
 }
 
 function getTimeDurations() {
-  let previewTime = 30;
-  let hints = [30, 20, 10];
-  let stealTime = 10;
-
+  let previewTime = 30, hints = [30, 20, 10], stealTime = 10;
   if (state.timePacing === "relaxed") {
-    previewTime += 10;
-    hints = hints.map(t => t + 10);
-    stealTime += 10;
+    previewTime += 10; hints = hints.map(t => t + 10); stealTime += 10;
   } else if (state.timePacing === "rush") {
-    previewTime -= 5;
-    hints = hints.map(t => t - 5);
-    stealTime = 10; 
+    previewTime -= 5; hints = hints.map(t => t - 5); stealTime = 10; 
   }
-
   return { previewTime, hints, stealTime };
 }
 
@@ -1737,23 +1731,23 @@ function showGameOver(){
   else banner.textContent = "🤝 تعادل تام بين الفريقين!";
 
   const tbody = document.getElementById("historyBody");
-  tbody.innerHTML = state.history.map(h => `
-    <tr style="border-bottom:1px solid var(--line);">
-      <td style="padding:8px 6px;">${h.round}</td>
-      <td style="padding:8px 6px; color:var(--amber);">${h.word}</td>
-      <td style="padding:8px 6px; font-weight:bold;">${h.winner}</td>
-      <td style="padding:8px 6px;">${h.pts > 0 ? "+" + h.pts : "0"}</td>
-    </tr>
-  `).join("");
+  if(tbody) {
+    tbody.innerHTML = state.history.map(h => `
+      <tr style="border-bottom:1px solid var(--line);">
+        <td style="padding:8px 6px;">${h.round}</td>
+        <td style="padding:8px 6px; color:var(--amber);">${h.word}</td>
+        <td style="padding:8px 6px; font-weight:bold;">${h.winner}</td>
+        <td style="padding:8px 6px;">${h.pts > 0 ? "+" + h.pts : "0"}</td>
+      </tr>
+    `).join("");
+  }
 
   show("screen-over");
 }
 
 function show(id){
   ["screen-setup","screen-wheel","screen-play","screen-result","screen-over"].forEach(s => {
-    document.getElementById(s).classList.toggle("hidden", s !== id);
+    const el = document.getElementById(s);
+    if(el) el.classList.toggle("hidden", s !== id);
   });
 }
-</script>
-</body>
-</html>
