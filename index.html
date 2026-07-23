@@ -385,8 +385,9 @@ body {
   </div>
 </div>
 <script>
+console.log("✅ تم تحميل اللعبة بنجاح (نسخة الصوت المعدلة)!");
+
 const WORD_BANK = [
-  // --- السيارات والسباقات ---
   { word: "سيارة", forbidden: ["تواير", "بنزين", "شارع", "سياقة"], cat: "cars", diff: "easy" },
   { word: "فرامل", forbidden: ["توقف", "بريك", "دواسة", "سرعة"], cat: "cars", diff: "easy" },
   { word: "إطارات", forbidden: ["تواير", "رنغات", "هواء", "تبديل"], cat: "cars", diff: "easy" },
@@ -399,7 +400,6 @@ const WORD_BANK = [
   { word: "رادار", forbidden: ["سرعة", "مخالفة", "كاميرا", "شارع"], cat: "cars", diff: "medium" },
   { word: "كراج", forbidden: ["تصليح", "ميكانيكي", "دهن", "سيرفس"], cat: "cars", diff: "medium" },
   { word: "جير", forbidden: ["عادي", "أوتوماتيك", "تبديل", "سرعة"], cat: "cars", diff: "medium" },
-  // --- عام ---
   { word: "جبل البركان", forbidden: ["نار", "حمم", "دخان", "انفجار"], cat: "general", diff: "hard" },
   { word: "شلال المياه", forbidden: ["سقوط", "نهر", "جبل", "ماء"], cat: "general", diff: "hard" },
   { word: "قوس قزح", forbidden: ["ألوان", "مطر", "شمس", "سماء"], cat: "general", diff: "hard" },
@@ -422,16 +422,32 @@ let state = {};
 let timerInterval = null;
 let timeRemaining = 0;
 
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function playBeep(freq = 440, duration = 0.15) {
+// متغير الصوت (لن يبدأ إلا عند الضغط على زر)
+let audioCtx = null;
+
+function getAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  // نأمر المتصفح باستئناف الصوت إذا كان معلقاً (ضروري لكروم)
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+function playBeep(freq, duration) {
+  if(!freq) freq = 440;
+  if(!duration) duration = 0.15;
   try {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
     osc.frequency.value = freq; osc.start();
-    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
-    osc.stop(audioCtx.currentTime + duration);
-  } catch(e){}
+    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
+    osc.stop(ctx.currentTime + duration);
+  } catch(e){ console.log("⚠️ خطأ في الصوت (تجاهل)", e); }
 }
 
 function playWrongFx() {
@@ -455,12 +471,20 @@ function playSuccessFx() {
 }
 
 function selectMode(mode, element) {
+  // تفعيل الصوت عند أول ضغطة (حتى لو ما فيه صوت)
+  getAudioContext();
+  
   selectedGameMode = mode;
   document.querySelectorAll('.mode-select-box').forEach(el => el.classList.remove('active'));
   if(element) element.classList.add('active');
+  console.log("✅ تم اختيار الوضع:", mode);
 }
 
 function startGame(){
+  // تفعيل الصوت عند الضغط على زر البدأ
+  getAudioContext();
+  console.log("✅ زر البدء اشتغل!");
+
   const category = document.getElementById("category").value;
   const difficulty = document.getElementById("difficulty").value;
   const timePacing = document.getElementById("timePacing").value;
@@ -471,11 +495,9 @@ function startGame(){
 
   let pool = WORD_BANK.filter(w => (category === "mix" || w.cat === category) && w.diff === difficulty);
   
-  // لو مافي كلمات كافية، ناخذ الكل
   if(pool.length < rounds) {
     pool = [...WORD_BANK];
   }
-  // نخلط ونقطع العدد المطلوب
   pool = pool.sort(() => Math.random() - 0.5).slice(0, rounds);
 
   state = {
@@ -539,6 +561,7 @@ function restartGameModal() {
 }
 
 function spinWheel(){
+  getAudioContext(); // تأكد من الصوت عند الدوران
   const winner = Math.random() < 0.5 ? "A" : "B";
   const totalDeg = 1800 + (winner === "A" ? 90 : 270);
   document.getElementById("wheel").style.transform = `rotate(${totalDeg}deg)`;
