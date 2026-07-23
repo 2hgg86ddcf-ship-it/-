@@ -135,11 +135,12 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  box-sizing: border-box;
 }
-.reveal-box .word{ font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:26px; color:var(--off-white); }
-.reveal-box .tap-label{ color:#8a8b96; font-size:14px; margin-top:6px; }
+.reveal-box .word{ font-family:'Segoe UI','Tahoma',sans-serif; font-weight:900; font-size:26px; color:var(--off-white); flex-shrink: 0; }
+.reveal-box .tap-label{ color:#8a8b96; font-size:14px; margin-top:6px; flex-shrink: 0; }
 
-.forbidden-list { margin-top: 15px; background: rgba(230,57,70,0.15); border: 1px solid var(--racing-red); border-radius: 8px; padding: 10px; }
+.forbidden-list { margin-top: auto; background: rgba(230,57,70,0.15); border: 1px solid var(--racing-red); border-radius: 8px; padding: 10px; width: 100%; box-sizing: border-box; flex-shrink: 0; }
 .forbidden-title { color: var(--racing-red); font-weight: 700; font-size: 12px; margin-bottom: 6px; }
 .forbidden-words { color: var(--off-white); font-weight: bold; font-size: 14px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .forbidden-tag { background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 6px; }
