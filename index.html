@@ -185,7 +185,8 @@ body {
 
       <div class="mode-select-box" onclick="selectMode('taboo', this)">
         <div class="mode-title">🚫 طور لا تقولها <span>محظور</span></div>
-        <div class="mode-desc">تطلع لك الكلمة وتحتها 4 كلمات محظورة ممنوع تذكرها بالنهاية.</div>
+        <div class="mode-desc">تظهر كلمتين أو 3 أو 4 كلمات محظورة حسب الصعوبة المختارة</div>
+
       </div>
 
       <div class="row" style="margin-top:10px;">
@@ -1441,7 +1442,7 @@ function startGame(){
   const roundsEl = document.getElementById("rounds");
 
   const category = catEl ? catEl.value : "general";
-  const difficulty = diffEl ? diffEl.value : "hard";
+  const difficulty = diffEl ? diffEl.value : "medium"; // جلب الصعوبة المحددة
   const timePacing = paceEl ? paceEl.value : "normal";
   const rounds = roundsEl ? (parseInt(roundsEl.value) || 10) : 10;
 
@@ -1459,6 +1460,7 @@ function startGame(){
 
   state = {
     gameMode: selectedGameMode,
+    difficulty: difficulty, 
     timePacing: timePacing,
     teamA: nameA, teamB: nameB, rounds,
     words: pool, roundIndex: 0, scoreA: 0, scoreB: 0, hintTeam: "A",
@@ -1468,6 +1470,7 @@ function startGame(){
   updateTeamNamesDisplay();
   show("screen-wheel");
 }
+
 
 function updateTeamNamesDisplay() {
   const setTxt = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
@@ -1611,12 +1614,17 @@ function setupTurn(){
   startTimer(duration, () => wrongGuess());
 }
 
-// دالة جلب عدد الكلمات المحظورة بحجم مناسب وحسب الصعوبة
+
 function getForbiddenWords(curr) {
   if (!curr || !curr.forbidden) return [];
-  // فحص مختلف المسميات المحتملة لمتغير الصعوبة في مشروعات الجافاسكريبت
-  const diff = (state.difficulty || state.difficultyLevel || state.level || "medium").toString().toLowerCase();
   
+  const diff = state.difficulty || "medium";
+  
+  if (diff === "easy") return curr.forbidden.slice(0, 2);    
+  if (diff === "hard") return curr.forbidden.slice(0, 4);   
+  return curr.forbidden.slice(0, 3);                        
+}
+
   let count = 3; 
   if (diff.includes("easy") || diff.includes("1") || diff === "سهل") count = 2;
   else if (diff.includes("hard") || diff.includes("3") || diff === "صعب") count = 4;
