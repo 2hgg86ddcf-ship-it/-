@@ -1378,6 +1378,7 @@ let state = {};
 let timerInterval = null;
 let timeRemaining = 0;
 
+// Audio Context for Beeps
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playBeep(freq = 440, duration = 0.15) {
   try {
@@ -1398,6 +1399,7 @@ function startGame(){
   const teamB = document.getElementById("teamB").value.trim() || "الفريق الأخضر";
   const rounds = parseInt(document.getElementById("rounds").value);
 
+  // Pick Words
   let pool = [...WORD_BANK].sort(() => Math.random() - 0.5).slice(0, rounds);
 
   state = {
@@ -1437,6 +1439,7 @@ function setupRound(){
   const teamName = state.hintTeam === "A" ? state.teamA : state.teamB;
   document.getElementById("turnLabel").textContent = `دور ${teamName}`;
 
+  // Mode UI
   const modeBadge = document.getElementById("currentModeBadge");
   const turnHint = document.getElementById("turnHint");
   
@@ -1484,6 +1487,7 @@ function startTimer(sec){
     timeRemaining--;
     document.getElementById("timerDisplay").textContent = timeRemaining;
 
+    // Flash and vibrate when time is <= 5 seconds
     if(timeRemaining <= 5 && timeRemaining > 0) {
       document.body.classList.add("time-warning");
       playBeep(600, 0.1);
@@ -1493,7 +1497,7 @@ function startTimer(sec){
     if(timeRemaining <= 0) {
       clearInterval(timerInterval);
       document.body.classList.remove("time-warning");
-      playBeep(300, 0.4);
+      playBeep(300, 0.4); // Time over sound
       wrongGuess();
     }
   }, 1000);
@@ -1545,4 +1549,6 @@ function show(id){
     document.getElementById(s).classList.toggle("hidden", s !== id);
   });
 }
-
+</script>
+</body>
+</html>
