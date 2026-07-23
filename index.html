@@ -1379,80 +1379,56 @@ let selectedGameMode = "classic";
 let state = {};
 let timerInterval = null;
 let timeRemaining = 0;
-let audioCtx = null;
 
-function getAudioContext() {
-  if (!audioCtx) {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (AudioContextClass) audioCtx = new AudioContextClass();
-  }
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-  return audioCtx;
-}
-
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playBeep(freq = 440, duration = 0.15) {
   try {
-    const ctx = getAudioContext();
-    if (!ctx) return;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(audioCtx.destination);
     osc.frequency.value = freq;
     osc.start();
-    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
-    osc.stop(ctx.currentTime + duration);
+    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+    osc.stop(audioCtx.currentTime + duration);
   } catch(e){}
 }
 
 function selectMode(mode, element) {
   selectedGameMode = mode;
-  document.querySelectorAll('.mode-card, .mode-select-box').forEach(el => el.classList.remove('active'));
-  if(element) element.classList.add('active');
+  document.querySelectorAll('.mode-card, .mode-select-box, [onclick*="selectMode"]').forEach(el => el.classList.remove('active'));
+  if(element) {
+    element.classList.add('active');
+  } else {
+    // Fallback if element wasn't passed directly
+    event.currentTarget.classList.add('active');
+  }
 }
 
 function startGame(){
-  const catEl = document.getElementById("category");
-  const diffEl = document.getElementById("difficulty");
-  const paceEl = document.getElementById("timePacing");
-  const roundsEl = document.getElementById("rounds");
-
-  const category = catEl ? catEl.value : "general";
-  const difficulty = diffEl ? diffEl.value : "medium";
-  const timePacing = paceEl ? paceEl.value : "normal";
-  const rounds = roundsEl ? (parseInt(roundsEl.value) || 10) : 10;
-
+  const gameMode = selectedGameMode || "classic";
   const teamAInput = document.getElementById("teamA");
   const teamBInput = document.getElementById("teamB");
+  const roundsInput = document.getElementById("rounds");
 
-  const nameA = (teamAInput && teamAInput.value.trim()) || "الفريق الأحمر";
-  const nameB = (teamBInput && teamBInput.value.trim()) || "الفريق الأخضر";
+  const teamA = (teamAInput && teamAInput.value.trim()) || "الفريق الأحمر";
+  const teamB = (teamBInput && teamBInput.value.trim()) || "الفريق الأخضر";
+  const rounds = roundsInput ? parseInt(roundsInput.value) || 10 : 10;
 
   const sourceBank = (typeof WORD_BANK !== "undefined") ? WORD_BANK : [];
-
-  let pool = sourceBank.filter(w => (category === "mix" || w.cat === category) && w.diff === difficulty);
-  if(!pool || pool.length === 0) pool = sourceBank;
-  pool = [...pool].sort(() => Math.random() - 0.5).slice(0, rounds);
+  let pool = [...sourceBank].sort(() => Math.random() - 0.5).slice(0, rounds);
+  if(pool.length === 0) pool = [{word: "تجربة", forbidden: ["اختبار"]}];
 
   state = {
-    gameMode: selectedGameMode,
-    difficulty: difficulty, 
-    timePacing: timePacing,
-    teamA: nameA, teamB: nameB, rounds,
-    words: pool, roundIndex: 0, scoreA: 0, scoreB: 0, hintTeam: "A",
-    hintNumber: 1, history: []
+    gameMode, teamA, teamB, rounds, words: pool,
+    roundIndex: 0, scoreA: 0, scoreB: 0, hintTeam: "A"
   };
 
-  const nameAEl = document.getElementById("wheelLabelA");
-  const nameBEl = document.getElementById("wheelLabelB");
-  const sbNameA = document.getElementById("sbNameA");
-  const sbNameB = document.getElementById("sbNameB");
+  const nameAEl = document.getElementById("sbNameA");
+  const nameBEl = document.getElementById("sbNameB");
+  if(nameAEl) nameAEl.textContent = teamA;
+  if(nameBEl) nameBEl.textContent = teamB;
   
-  if(nameAEl) nameAEl.textContent = nameA;
-  if(nameBEl) nameBEl.textContent = nameB;
-  if(sbNameA) sbNameA.textContent = nameA;
-  if(sbNameB) sbNameB.textContent = nameB;
-
   show("screen-wheel");
 }
 
@@ -1462,7 +1438,7 @@ function spinWheel(){
   const wheel = document.getElementById("wheel");
   if(wheel) wheel.style.transform = `rotate(${totalDeg}deg)`;
   state.hintTeam = winner;
-
+  
   setTimeout(() => {
     const name = winner === "A" ? state.teamA : state.teamB;
     const banner = document.getElementById("wheelResultBanner");
@@ -1479,142 +1455,63 @@ function proceedToPlay(){
   setupRound();
 }
 
-function getTimeDurations() {
-  let previewTime = 30, hints = [30, 20, 10], stealTime = 10;
-  if (state.timePacing === "relaxed") {
-    previewTime += 10; hints = hints.map(t => t + 10); stealTime += 10;
-  } else if (state.timePacing === "rush") {
-    previewTime -= 5; hints = hints.map(t => t - 5); stealTime = 10; 
-  }
-  return { previewTime, hints, stealTime };
-}
-
 function setupRound(){
-  state.hintNumber = 1;
   const lap = document.getElementById("lapLabel");
-  if(lap) lap.textContent = `الجولة ${state.roundIndex + 1} / ${state.rounds}`;
-  
   const ptsA = document.getElementById("sbPtsA");
   const ptsB = document.getElementById("sbPtsB");
+  if(lap) lap.textContent = `الجولة ${state.roundIndex + 1} / ${state.rounds}`;
   if(ptsA) ptsA.textContent = state.scoreA;
   if(ptsB) ptsB.textContent = state.scoreB;
+
+  const teamName = state.hintTeam === "A" ? state.teamA : state.teamB;
+  const turnLabel = document.getElementById("turnLabel");
+  if(turnLabel) turnLabel.textContent = `دور ${teamName}`;
 
   const modeBadge = document.getElementById("currentModeBadge");
   const turnHint = document.getElementById("turnHint");
   
-  if(modeBadge) {
+  if(modeBadge && turnHint) {
     if(state.gameMode === "charades") {
-      modeBadge.textContent = "🤐 طور ولا كلمة (تمثيل)";
-      if(turnHint) turnHint.textContent = "ممنوع تتكلم أو تطلع أي صوت! 🤫";
+      modeBadge.textContent = "🤐 طور ولا كلمة (مثل بالحركات فقط!)";
+      turnHint.textContent = "ممنوع تتكلم أو تطلع أي صوت! 🤫";
     } else if(state.gameMode === "taboo") {
       modeBadge.textContent = "🚫 طور لا تقولها (كلمات محظورة)";
-      if(turnHint) turnHint.textContent = "اشرح الكلمة بدون ما تقول الكلمات المحظورة!";
+      turnHint.textContent = "اشرح الكلمة بدون ما تقول الكلمات المحظورة!";
     } else {
       modeBadge.textContent = "🎤 طور كلمة التقليدي";
-      if(turnHint) turnHint.textContent = "اعطِ تلميح كلمة واحدة فقط!";
+      turnHint.textContent = "اعطِ تلميح كلمة واحدة فقط!";
     }
   }
 
-  const teamName = state.hintTeam === "A" ? state.teamA : state.teamB;
-  const turnEl = document.getElementById("turnLabel");
-  if(turnEl) turnEl.textContent = `دور ${teamName}`;
+  const wordDisp = document.getElementById("wordDisplay");
+  const forbiddenBox = document.getElementById("forbiddenBox");
+  if(wordDisp) wordDisp.textContent = "🔒 اضغط هنا";
+  if(forbiddenBox) forbiddenBox.classList.add("hidden");
 
-  const preWord = document.getElementById("previewWordDisplay");
-  if(preWord) {
-    if(state.gameMode === "taboo") {
-      revealPreviewWord();
-    } else {
-      preWord.textContent = "🔒 اضغط هنا";
-    }
-  }
-
-  const pArea = document.getElementById("previewArea");
-  const hArea = document.getElementById("hintArea");
-  const sArea = document.getElementById("stealArea");
-  if(pArea) pArea.classList.remove("hidden");
-  if(hArea) hArea.classList.add("hidden");
-  if(sArea) sArea.classList.add("hidden");
-
-  const times = getTimeDurations();
-  startTimer(times.previewTime, () => startHintPhase());
-}
-
-function skipPreview(){ startHintPhase(); }
-
-function startHintPhase(){
-  const pArea = document.getElementById("previewArea");
-  const hArea = document.getElementById("hintArea");
-  if(pArea) pArea.classList.add("hidden");
-  if(hArea) hArea.classList.remove("hidden");
-  setupTurn();
-}
-
-function setupTurn(){
-  const hintB = document.getElementById("hintBadge");
-  if(hintB) hintB.textContent = `المحاولة ${state.hintNumber} / 3`;
-  
-  const wDisp = document.getElementById("wordDisplay");
-  if(wDisp) wDisp.textContent = "🔒 اضغط هنا";
-
-  const times = getTimeDurations();
-  const duration = times.hints[state.hintNumber - 1];
-  startTimer(duration, () => wrongGuess());
-}
-
-function getForbiddenWords(curr) {
-  if (!curr || !curr.forbidden) return [];
-  const diff = state.difficulty || "medium";
-  if (diff === "easy") return curr.forbidden.slice(0, 2);    
-  if (diff === "hard") return curr.forbidden.slice(0, 4);   
-  return curr.forbidden.slice(0, 3);                        
+  startTimer(30);
 }
 
 function revealWord(){
   const curr = state.words[state.roundIndex];
   if(!curr) return;
-  
-  const wDisp = document.getElementById("wordDisplay");
-  if(wDisp) wDisp.textContent = curr.word;
+  const wordDisp = document.getElementById("wordDisplay");
+  if(wordDisp) wordDisp.textContent = curr.word;
 
   if(state.gameMode === "taboo") {
     const fBox = document.getElementById("forbiddenBox");
     const fWords = document.getElementById("forbiddenWords");
     if(fWords && curr.forbidden) {
-      const activeForbidden = getForbiddenWords(curr);
-      fWords.innerHTML = activeForbidden.map(w => `<span class="forbidden-tag">${w}</span>`).join("");
+      fWords.innerHTML = curr.forbidden.map(w => `<span class="forbidden-tag">${w}</span>`).join("");
     }
     if(fBox) fBox.classList.remove("hidden");
   }
 }
 
-function revealPreviewWord(){ 
-  const curr = state.words[state.roundIndex];
-  if(!curr) return;
-  
-  const preWord = document.getElementById("previewWordDisplay");
-  if(!preWord) return;
-
-  if(state.gameMode === "taboo" && curr.forbidden) {
-    const activeForbidden = getForbiddenWords(curr);
-    const tagsHtml = activeForbidden.map(w => `<span style="background:rgba(255,255,255,0.1); color:#fff; padding:2px 8px; border-radius:6px; margin:2px; display:inline-block; font-size:0.8rem;">${w}</span>`).join("");
-    
-    preWord.innerHTML = `
-      <div style="font-size:1.2rem; font-weight:bold; margin-bottom:4px;">${curr.word}</div>
-      <div style="background:rgba(239, 68, 68, 0.12); border:1px solid rgba(239, 68, 68, 0.3); border-radius:8px; padding:4px 8px; margin-top:4px;">
-        <div style="color:#ef4444; font-size:0.75rem; font-weight:bold; margin-bottom:2px;">⚠️ ممنوع تقول هالمصطلحات:</div>
-        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:2px;">${tagsHtml}</div>
-      </div>
-    `;
-  } else {
-    preWord.textContent = curr.word;
-  }
-}
-
 function hideWord(){
-  const wDisp = document.getElementById("wordDisplay");
-  if(wDisp) wDisp.textContent = "🔒 اضغط هنا";
-  const fBox = document.getElementById("forbiddenBox");
-  if(fBox) fBox.classList.add("hidden");
+  const wordDisp = document.getElementById("wordDisplay");
+  const forbiddenBox = document.getElementById("forbiddenBox");
+  if(wordDisp) wordDisp.textContent = "🔒 اضغط هنا";
+  if(forbiddenBox) forbiddenBox.classList.add("hidden");
 }
 
 function startTimer(sec){
@@ -1646,35 +1543,23 @@ function startTimer(sec){
 function confirmGuessed(){
   clearInterval(timerInterval);
   document.body.classList.remove("time-warning");
-  
-  const pts = state.hintNumber === 1 ? 3 : (state.hintNumber === 2 ? 2 : 1);
-  if(state.hintTeam === "A") state.scoreA += pts;
-  else state.scoreB += pts;
-  
-  showRoundResult(true, pts);
+  if(state.hintTeam === "A") state.scoreA += 2;
+  else state.scoreB += 2;
+  showRoundResult(true);
 }
 
 function wrongGuess(){
   clearInterval(timerInterval);
   document.body.classList.remove("time-warning");
-
-  if(state.hintNumber >= 3){
-    showRoundResult(false, 0);
-  } else {
-    state.hintNumber++;
-    setupTurn();
-  }
+  showRoundResult(false);
 }
 
-function showRoundResult(win, pts){
+function showRoundResult(win){
   const name = state.hintTeam === "A" ? state.teamA : state.teamB;
   const rWord = document.getElementById("resultWord");
   const rBanner = document.getElementById("resultBanner");
-  
   if(rWord && state.words[state.roundIndex]) rWord.textContent = state.words[state.roundIndex].word;
-  if(rBanner) {
-    rBanner.textContent = win ? `🏆 ${name} جاوبوا صح! (+${pts} نقاط)` : `❌ لأسف ما عرفوها!`;
-  }
+  if(rBanner) rBanner.textContent = win ? `🏆 ${name} جاوبوا صح! (+2 نقطة)` : `❌ لأسف ما عرفوها!`;
   show("screen-result");
 }
 
