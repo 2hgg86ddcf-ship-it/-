@@ -1374,55 +1374,161 @@ const WORD_BANK = [
   { word: "الهزة الأرضية", forbidden: ["زلزال", "بيوت", "أرض", "سقوط"], cat: "general", diff: "hard" }
 
 ];
+// 1️⃣ المتغيرات الأساسية
+let selectedGameMode = "classic";
 let state = {};
 let timerInterval = null;
 let timeRemaining = 0;
+let audioCtx = null;
 
-// Audio Context for Beeps
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function playBeep(freq = 440, duration = 0.15) {
+// 2️⃣ محرك الصوت
+function getAudioContext() {
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) audioCtx = new AudioContextClass();
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playBeep(freq = 440, duration = 0.1) {
   try {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
     osc.connect(gain);
-    gain.connect(audioCtx.destination);
+    gain.connect(ctx.destination);
     osc.frequency.value = freq;
     osc.start();
-    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
-    osc.stop(audioCtx.currentTime + duration);
-  } catch(e){}
+    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
+    osc.stop(ctx.currentTime + duration);
+  } catch (e) { console.log(e); }
 }
 
-function startGame(){
-  const gameMode = document.getElementById("gameMode").value;
-  const teamA = document.getElementById("teamA").value.trim() || "الفريق الأحمر";
-  const teamB = document.getElementById("teamB").value.trim() || "الفريق الأخضر";
-  const rounds = parseInt(document.getElementById("rounds").value);
+function playWrongFx() {
+  playBeep(220, 0.25);
+  if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+  const card = document.getElementById("playCard");
+  if(card) {
+    card.classList.remove("shake-effect");
+    void card.offsetWidth;
+    card.classList.add("shake-effect");
+  }
+}
 
-  // Pick Words
-  let pool = [...WORD_BANK].sort(() => Math.random() - 0.5).slice(0, rounds);
+function playSuccessFx() {
+  playBeep(880, 0.12);
+  setTimeout(() => playBeep(1200, 0.2), 100);
+  if(navigator.vibrate) navigator.vibrate(80);
+  document.body.classList.remove("success-effect");
+  void document.body.offsetWidth;
+  document.body.classList.add("success-effect");
+}
+
+// 3️⃣ دالة اختيار طور اللعبة (عشان الأزرار تتغير)
+function selectMode(mode, element) {
+  selectedGameMode = mode;
+  document.querySelectorAll('.mode-card, .mode-select-box, [onclick*="selectMode"]').forEach(el => el.classList.remove('active'));
+  if(element) element.classList.add('active');
+}
+
+// 4️⃣ دالة البدء (ربط مباشر وآمن مع أزرار الإدخال)
+function startGame(){
+  const catEl = document.getElementById("category");
+  const diffEl = document.getElementById("difficulty");
+  const paceEl = document.getElementById("timePacing");
+  const roundsEl = document.getElementById("rounds");
+
+  const category = catEl ? catEl.value : "general";
+  const difficulty = diffEl ? diffEl.value : "hard";
+  const timePacing = paceEl ? paceEl.value : "normal";
+  const rounds = roundsEl ? (parseInt(roundsEl.value) || 10) : 10;
+
+  const teamAInput = document.getElementById("teamA");
+  const teamBInput = document.getElementById("teamB");
+
+  const nameA = (teamAInput && teamAInput.value.trim()) || "الفريق الأحمر";
+  const nameB = (teamBInput && teamBInput.value.trim()) || "الفريق الأخضر";
+
+  // جلب بنك الكلمات المكتوب في ملفك
+  const sourceBank = (typeof WORD_BANK !== "undefined") ? WORD_BANK : [];
+
+  let pool = sourceBank.filter(w => (category === "mix" || w.cat === category) && w.diff === difficulty);
+  if(!pool || pool.length === 0) pool = sourceBank;
+  pool = [...pool].sort(() => Math.random() - 0.5).slice(0, rounds);
 
   state = {
-    gameMode, teamA, teamB, rounds, words: pool,
-    roundIndex: 0, scoreA: 0, scoreB: 0, hintTeam: "A"
+    gameMode: selectedGameMode,
+    timePacing: timePacing,
+    teamA: nameA, teamB: nameB, rounds,
+    words: pool, roundIndex: 0, scoreA: 0, scoreB: 0, hintTeam: "A",
+    hintNumber: 1, history: []
   };
 
-  document.getElementById("sbNameA").textContent = teamA;
-  document.getElementById("sbNameB").textContent = teamB;
+  updateTeamNamesDisplay();
   show("screen-wheel");
 }
+
+function updateTeamNamesDisplay() {
+  const setTxt = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
+  setTxt("wheelLabelA", state.teamA);
+  setTxt("wheelLabelB", state.teamB);
+  setTxt("sbNameA", state.teamA);
+  setTxt("sbNameB", state.teamB);
+  setTxt("finalNameA", state.teamA);
+  setTxt("finalNameB", state.teamB);
+}
+
+function openSettingsModal() {
+  clearInterval(timerInterval);
+  const editA = document.getElementById("editTeamA");
+  const editB = document.getElementById("editTeamB");
+  if(editA) editA.value = state.teamA;
+  if(editB) editB.value = state.teamB;
+  const modal = document.getElementById("modal-settings");
+  if(modal) modal.classList.remove("hidden");
+}
+
+function closeSettingsModal() {
+  const modal = document.getElementById("modal-settings");
+  if(modal) modal.classList.add("hidden");
+  if(timeRemaining > 0) {
+    startTimer(timeRemaining, () => wrongGuess());
+  }
+}
+
+function saveSettings() {
+  const editA = document.getElementById("editTeamA");
+  const editB = document.getElementById("editTeamB");
+  state.teamA = (editA && editA.value.trim()) || "الفريق الأحمر";
+  state.teamB = (editB && editB.value.trim()) || "الفريق الأخضر";
+  updateTeamNamesDisplay();
+  
+  const turnEl = document.getElementById("turnLabel");
+  const currentTeamName = state.hintTeam === "A" ? state.teamA : state.teamB;
+  if(turnEl) turnEl.textContent = `دور ${currentTeamName}`;
+
+  closeSettingsModal();
+}
+
+function restartGameModal() { location.reload(); }
 
 function spinWheel(){
   const winner = Math.random() < 0.5 ? "A" : "B";
   const totalDeg = 1800 + (winner === "A" ? 90 : 270);
-  document.getElementById("wheel").style.transform = `rotate(${totalDeg}deg)`;
+  const wheel = document.getElementById("wheel");
+  if(wheel) wheel.style.transform = `rotate(${totalDeg}deg)`;
   state.hintTeam = winner;
-  
+
   setTimeout(() => {
     const name = winner === "A" ? state.teamA : state.teamB;
-    document.getElementById("wheelResultBanner").textContent = `🎉 ${name} يبدأ أول!`;
-    document.getElementById("wheelResultArea").classList.remove("hidden");
-    document.getElementById("spinBtn").classList.add("hidden");
+    const banner = document.getElementById("wheelResultBanner");
+    const area = document.getElementById("wheelResultArea");
+    const spinBtn = document.getElementById("spinBtn");
+    if(banner) banner.textContent = `🎉 ${name} يبدأ أول!`;
+    if(area) area.classList.remove("hidden");
+    if(spinBtn) spinBtn.classList.add("hidden");
   }, 3300);
 }
 
@@ -1431,74 +1537,141 @@ function proceedToPlay(){
   setupRound();
 }
 
+function getTimeDurations() {
+  let previewTime = 30, hints = [30, 20, 10], stealTime = 10;
+  if (state.timePacing === "relaxed") {
+    previewTime += 10; hints = hints.map(t => t + 10); stealTime += 10;
+  } else if (state.timePacing === "rush") {
+    previewTime -= 5; hints = hints.map(t => t - 5); stealTime = 10; 
+  }
+  return { previewTime, hints, stealTime };
+}
+
 function setupRound(){
-  document.getElementById("lapLabel").textContent = `الجولة ${state.roundIndex + 1} / ${state.rounds}`;
-  document.getElementById("sbPtsA").textContent = state.scoreA;
-  document.getElementById("sbPtsB").textContent = state.scoreB;
-
-  const teamName = state.hintTeam === "A" ? state.teamA : state.teamB;
-  document.getElementById("turnLabel").textContent = `دور ${teamName}`;
-
-  // Mode UI
-  const modeBadge = document.getElementById("currentModeBadge");
-  const turnHint = document.getElementById("turnHint");
+  state.hintNumber = 1;
+  const lap = document.getElementById("lapLabel");
+  if(lap) lap.textContent = `الجولة ${state.roundIndex + 1} / ${state.rounds}`;
   
-  if(state.gameMode === "charades") {
-    modeBadge.textContent = "🤐 طور ولا كلمة (مثل بالحركات فقط!)";
-    turnHint.textContent = "ممنوع تتكلم أو تطلع أي صوت! 🤫";
-  } else if(state.gameMode === "taboo") {
-    modeBadge.textContent = "🚫 طور لا تقولها (كلمات محظورة)";
-    turnHint.textContent = "اشرح الكلمة بدون ما تقول الكلمات المحظورة!";
-  } else {
-    modeBadge.textContent = "🎤 طور كلمة التقليدي";
-    turnHint.textContent = "اعطِ تلميح كلمة واحدة فقط!";
+  const ptsA = document.getElementById("sbPtsA");
+  const ptsB = document.getElementById("sbPtsB");
+  if(ptsA) ptsA.textContent = state.scoreA;
+  if(ptsB) ptsB.textContent = state.scoreB;
+
+  const modeBadge = document.getElementById("currentModeBadge");
+  if(modeBadge) {
+    if(state.gameMode === "charades") modeBadge.textContent = "🤐 طور ولا كلمة (تمثيل)";
+    else if(state.gameMode === "taboo") modeBadge.textContent = "🚫 طور لا تقولها (كلمات محظورة)";
+    else modeBadge.textContent = "🎤 طور كلمة التقليدي";
   }
 
-  document.getElementById("wordDisplay").textContent = "🔒 اضغط هنا";
-  document.getElementById("forbiddenBox").classList.add("hidden");
+  const teamName = state.hintTeam === "A" ? state.teamA : state.teamB;
+  const turnEl = document.getElementById("turnLabel");
+  if(turnEl) {
+    turnEl.textContent = `دور ${teamName}`;
+    turnEl.className = "team-turn " + (state.hintTeam === "A" ? "a" : "b");
+  }
 
-  startTimer(30);
+  const preWord = document.getElementById("previewWordDisplay");
+  if(preWord) preWord.textContent = "🔒 اضغط هنا";
+  
+  const timerCap = document.getElementById("timerCaption");
+  if(timerCap) timerCap.textContent = "ثانية للتفكير قبل بدء الجولة";
+
+  const pArea = document.getElementById("previewArea");
+  const hArea = document.getElementById("hintArea");
+  const sArea = document.getElementById("stealArea");
+  if(pArea) pArea.classList.remove("hidden");
+  if(hArea) hArea.classList.add("hidden");
+  if(sArea) sArea.classList.add("hidden");
+
+  const times = getTimeDurations();
+  startTimer(times.previewTime, () => startHintPhase());
+}
+
+function skipPreview(){ startHintPhase(); }
+
+function startHintPhase(){
+  const pArea = document.getElementById("previewArea");
+  const hArea = document.getElementById("hintArea");
+  if(pArea) pArea.classList.add("hidden");
+  if(hArea) hArea.classList.remove("hidden");
+  setupTurn();
+}
+
+function setupTurn(){
+  const hintB = document.getElementById("hintBadge");
+  if(hintB) hintB.textContent = `المحاولة ${state.hintNumber} / 3`;
+  
+  const timerCap = document.getElementById("timerCaption");
+  if(timerCap) timerCap.textContent = "ثانية متبقية";
+  
+  const wDisp = document.getElementById("wordDisplay");
+  if(wDisp) wDisp.textContent = "🔒 اضغط هنا";
+
+  const times = getTimeDurations();
+  const duration = times.hints[state.hintNumber - 1];
+  startTimer(duration, () => wrongGuess());
 }
 
 function revealWord(){
   const curr = state.words[state.roundIndex];
-  document.getElementById("wordDisplay").textContent = curr.word;
+  if(!curr) return;
+  const wDisp = document.getElementById("wordDisplay");
+  if(wDisp) wDisp.textContent = curr.word;
 
   if(state.gameMode === "taboo") {
     const fBox = document.getElementById("forbiddenBox");
     const fWords = document.getElementById("forbiddenWords");
-    fWords.innerHTML = curr.forbidden.map(w => `<span class="forbidden-tag">${w}</span>`).join("");
-    fBox.classList.remove("hidden");
+    if(fWords && curr.forbidden) fWords.innerHTML = curr.forbidden.map(w => `<span class="forbidden-tag">${w}</span>`).join("");
+    if(fBox) fBox.classList.remove("hidden");
   }
 }
 
 function hideWord(){
-  document.getElementById("wordDisplay").textContent = "🔒 اضغط هنا";
-  document.getElementById("forbiddenBox").classList.add("hidden");
+  const wDisp = document.getElementById("wordDisplay");
+  if(wDisp) wDisp.textContent = "🔒 اضغط هنا";
+  const fBox = document.getElementById("forbiddenBox");
+  if(fBox) fBox.classList.add("hidden");
 }
 
-function startTimer(sec){
+function revealPreviewWord(){ 
+  const curr = state.words[state.roundIndex];
+  if(!curr) return;
+  let text = curr.word;
+  if(state.gameMode === "taboo" && curr.forbidden) {
+    text += "\n\n🚫 المحظور:\n" + curr.forbidden.join(" - ");
+  }
+  const preWord = document.getElementById("previewWordDisplay");
+  if(preWord) preWord.textContent = text; 
+}
+
+function hidePreviewWord(){ 
+  const preWord = document.getElementById("previewWordDisplay");
+  if(preWord) preWord.textContent = "🔒 اضغط هنا"; 
+}
+
+function startTimer(duration, onTimeout){
   clearInterval(timerInterval);
-  timeRemaining = sec;
-  document.getElementById("timerDisplay").textContent = timeRemaining;
+  timeRemaining = duration;
+  const tDisp = document.getElementById("timerDisplay");
+  if(tDisp) tDisp.textContent = timeRemaining;
   document.body.classList.remove("time-warning");
 
   timerInterval = setInterval(() => {
     timeRemaining--;
-    document.getElementById("timerDisplay").textContent = timeRemaining;
+    if(tDisp) tDisp.textContent = timeRemaining;
 
-    // Flash and vibrate when time is <= 5 seconds
-    if(timeRemaining <= 5 && timeRemaining > 0) {
+    if(timeRemaining <= 5 && timeRemaining > 0){
       document.body.classList.add("time-warning");
       playBeep(600, 0.1);
-      if(navigator.vibrate) navigator.vibrate(200);
+      if(navigator.vibrate) navigator.vibrate(150);
     }
 
-    if(timeRemaining <= 0) {
+    if(timeRemaining <= 0){
       clearInterval(timerInterval);
       document.body.classList.remove("time-warning");
-      playBeep(300, 0.4); // Time over sound
-      wrongGuess();
+      playBeep(300, 0.4);
+      onTimeout();
     }
   }, 1000);
 }
@@ -1506,21 +1679,82 @@ function startTimer(sec){
 function confirmGuessed(){
   clearInterval(timerInterval);
   document.body.classList.remove("time-warning");
-  if(state.hintTeam === "A") state.scoreA += 2;
-  else state.scoreB += 2;
-  showRoundResult(true);
+  playSuccessFx();
+  
+  const pts = state.hintNumber === 1 ? 3 : (state.hintNumber === 2 ? 2 : 1);
+  const winner = state.hintTeam === "A" ? state.teamA : state.teamB;
+  
+  if(state.hintTeam === "A") state.scoreA += pts;
+  else state.scoreB += pts;
+
+  const currentWord = state.words[state.roundIndex] ? state.words[state.roundIndex].word : "";
+  state.history.push({ round: state.roundIndex + 1, word: currentWord, winner, pts });
+  showRoundResult(`🏆 ${winner} يابوها صح بالمحاولة (${state.hintNumber})! +${pts} نقاط`);
 }
 
 function wrongGuess(){
   clearInterval(timerInterval);
   document.body.classList.remove("time-warning");
-  showRoundResult(false);
+  playWrongFx();
+
+  if(state.hintNumber >= 3){
+    startStealPhase();
+  } else {
+    state.hintNumber++;
+    setupTurn();
+  }
 }
 
-function showRoundResult(win){
-  const name = state.hintTeam === "A" ? state.teamA : state.teamB;
-  document.getElementById("resultWord").textContent = state.words[state.roundIndex].word;
-  document.getElementById("resultBanner").textContent = win ? `🏆 ${name} جاوبوا صح! (+2 نقطة)` : `❌ لأسف ما عرفوها!`;
+function burnWord(){
+  clearInterval(timerInterval);
+  document.body.classList.remove("time-warning");
+  playWrongFx();
+  const currentWord = state.words[state.roundIndex] ? state.words[state.roundIndex].word : "";
+  state.history.push({ round: state.roundIndex + 1, word: currentWord, winner: "🔥 ملغاة", pts: 0 });
+  showRoundResult("🔥 قيلت الكلمة بالغلط! الجولة تلغى ومحد ياخذ نقاط");
+}
+
+function startStealPhase(){
+  const stealTeam = state.hintTeam === "A" ? state.teamB : state.teamA;
+  const hArea = document.getElementById("hintArea");
+  const sArea = document.getElementById("stealArea");
+  const sBanner = document.getElementById("stealBanner");
+  if(hArea) hArea.classList.add("hidden");
+  if(sArea) sArea.classList.remove("hidden");
+  if(sBanner) sBanner.textContent = `🕵️ دور ${stealTeam} يسرقون النقطة!`;
+  
+  const times = getTimeDurations();
+  startTimer(times.stealTime, () => confirmSteal(false));
+}
+
+function confirmSteal(correct){
+  clearInterval(timerInterval);
+  document.body.classList.remove("time-warning");
+
+  const stealTeamId = state.hintTeam === "A" ? "B" : "A";
+  const stealTeamName = stealTeamId === "A" ? state.teamA : state.teamB;
+  const currentWord = state.words[state.roundIndex] ? state.words[state.roundIndex].word : "";
+
+  if(correct){
+    playSuccessFx();
+    if(stealTeamId === "A") state.scoreA += 2;
+    else state.scoreB += 2;
+    state.history.push({ round: state.roundIndex + 1, word: currentWord, winner: stealTeamName, pts: 2 });
+    showRoundResult(`🕵️ ${stealTeamName} سرقوا النقطة! +2 نقاط`);
+  } else {
+    playWrongFx();
+    state.history.push({ round: state.roundIndex + 1, word: currentWord, winner: "ولا أحد", pts: 0 });
+    showRoundResult("❌ محد عرف الكلمة، هالجولة بدون نقاط");
+  }
+}
+
+function showRoundResult(msg){
+  const rLap = document.getElementById("resultLapLabel");
+  const rWord = document.getElementById("resultWord");
+  const rBanner = document.getElementById("resultBanner");
+  if(rLap) rLap.textContent = `نتيجة الجولة ${state.roundIndex + 1}`;
+  if(rWord && state.words[state.roundIndex]) rWord.textContent = state.words[state.roundIndex].word;
+  if(rBanner) rBanner.textContent = msg;
   show("screen-result");
 }
 
@@ -1537,18 +1771,36 @@ function nextRound(){
 }
 
 function showGameOver(){
-  const b = document.getElementById("finalBanner");
-  if(state.scoreA > state.scoreB) b.textContent = `🎉 الفائز: ${state.teamA} (${state.scoreA} نقطة)`;
-  else if(state.scoreB > state.scoreA) b.textContent = `🎉 الفائز: ${state.teamB} (${state.scoreB} نقطة)`;
-  else b.textContent = "🤝 تعادل!";
+  const fPtsA = document.getElementById("finalPtsA");
+  const fPtsB = document.getElementById("finalPtsB");
+  if(fPtsA) fPtsA.textContent = state.scoreA;
+  if(fPtsB) fPtsB.textContent = state.scoreB;
+
+  const banner = document.getElementById("finalBanner");
+  if(banner){
+    if(state.scoreA > state.scoreB) banner.textContent = `🎉 الفائز: ${state.teamA}!`;
+    else if(state.scoreB > state.scoreA) banner.textContent = `🎉 الفائز: ${state.teamB}!`;
+    else banner.textContent = "🤝 تعادل تام بين الفريقين!";
+  }
+
+  const tbody = document.getElementById("historyBody");
+  if(tbody) {
+    tbody.innerHTML = state.history.map(h => `
+      <tr style="border-bottom:1px solid var(--line);">
+        <td style="padding:8px 6px;">${h.round}</td>
+        <td style="padding:8px 6px; color:var(--amber);">${h.word}</td>
+        <td style="padding:8px 6px; font-weight:bold;">${h.winner}</td>
+        <td style="padding:8px 6px;">${h.pts > 0 ? "+" + h.pts : "0"}</td>
+      </tr>
+    `).join("");
+  }
+
   show("screen-over");
 }
 
 function show(id){
   ["screen-setup","screen-wheel","screen-play","screen-result","screen-over"].forEach(s => {
-    document.getElementById(s).classList.toggle("hidden", s !== id);
+    const el = document.getElementById(s);
+    if(el) el.classList.toggle("hidden", s !== id);
   });
 }
-</script>
-</body>
-</html>
