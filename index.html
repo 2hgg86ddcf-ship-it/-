@@ -26,7 +26,7 @@ body {
     --line:#33353f;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{height:100%;}
+  html,body{height:100%; overflow:hidden; overscroll-behavior:none;}
   body{
     margin:0; background:var(--asphalt);
     background-image:
@@ -60,7 +60,7 @@ body {
     100% { background-color: var(--asphalt); }
   }
 
-  .app{ width:100%; max-width:440px; position:relative; }
+  .app{ width:100%; max-width:440px; position:relative; height:100%; overflow-y:auto; -webkit-overflow-scrolling:touch; }
   .flagbar{
     height:8px; width:100%; border-radius:6px; margin-bottom:18px;
     background-image: repeating-linear-gradient(45deg, var(--off-white) 0 8px, var(--asphalt-2) 8px 16px);
@@ -1527,6 +1527,10 @@ function restartGameModal() {
 }
 
 function spinWheel(){
+  const spinBtn = document.getElementById("spinBtn");
+  if(spinBtn && spinBtn.disabled) return;
+  if(spinBtn) spinBtn.disabled = true;
+
   getAudioContext();
   const winner = Math.random() < 0.5 ? "A" : "B";
   const totalDeg = 1800 + (winner === "A" ? 90 : 270);
@@ -1537,14 +1541,10 @@ function spinWheel(){
     const name = winner === "A" ? state.teamA : state.teamB;
     document.getElementById("wheelResultBanner").textContent = `🎉 ${name} يبدأ أول!`;
     document.getElementById("wheelResultArea").classList.remove("hidden");
-    document.getElementById("spinBtn").classList.add("hidden");
+    if(spinBtn) spinBtn.classList.add("hidden");
   }, 3300);
 }
 
-function proceedToPlay(){
-  show("screen-play");
-  setupRound();
-}
 
 function getTimeDurations() {
   let previewTime = 30;
