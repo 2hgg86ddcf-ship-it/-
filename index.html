@@ -291,12 +291,18 @@ body {
 
       <!-- PREVIEW AREA -->
       <div id="previewArea">
-        <div class="hint" style="margin-bottom:10px;">هذي كلمتكم، فكروا شلون تلمحون عليها 🧠</div>
-        <div class="reveal-box" onpointerdown="revealPreviewWord()" onpointerup="hidePreviewWord()" onpointerleave="hidePreviewWord()">
-          <div class="word" id="previewWordDisplay">🔒 اضغط هنا</div>
-        </div>
-        <button class="btn btn-amber" onclick="skipPreview()" style="margin-top:16px;">🚀 جاهزين، ابدأ</button>
-      </div>
+  <div class="hint" style="margin-bottom:10px;">هذي كلمتكم، فكروا شلون تلمحون عليها 🧠</div>
+  <div class="reveal-box" onpointerdown="revealPreviewWord()" onpointerup="hidePreviewWord()" onpointerleave="hidePreviewWord()">
+    <div class="word" id="previewWordDisplay">🔒 اضغط هنا</div>
+    <div class="forbidden-list hidden" id="previewForbiddenBox">
+      <div class="forbidden-title">⚠️ ممنوع تقول هالمصطلحات:</div>
+      <div class="forbidden-words" id="previewForbiddenWords"></div>
+    </div>
+  </div>
+  <button class="btn btn-amber" onclick="skipPreview()" style="margin-top:16px;">🚀 جاهزين، ابدأ</button>
+</div>
+
+
 
       <!-- HINT AREA -->
       <div id="hintArea" class="hidden">
@@ -1636,28 +1642,26 @@ function revealPreviewWord(){
   if(!curr) return;
   const preWord = document.getElementById("previewWordDisplay");
   if(!preWord) return;
+  preWord.textContent = curr.word;
 
   if(state.gameMode === "taboo" && curr.forbidden) {
-    const activeForbidden = getForbiddenWords(curr);
-    const tagsHtml = activeForbidden.map(w => `<span class="forbidden-tag">${w}</span>`).join("");
-    
-    preWord.innerHTML = `
-      <div class="word" style="margin-bottom:10px;">${curr.word}</div>
-      <div class="forbidden-list" style="margin-top:0;">
-        <div class="forbidden-title">⚠️ ممنوع تقول هالمصطلحات:</div>
-        <div class="forbidden-words">${tagsHtml}</div>
-      </div>
-    `;
-  } else {
-    preWord.textContent = curr.word;
+    const fBox = document.getElementById("previewForbiddenBox");
+    const fWords = document.getElementById("previewForbiddenWords");
+    if(fWords) {
+      const activeForbidden = getForbiddenWords(curr);
+      fWords.innerHTML = activeForbidden.map(w => `<span class="forbidden-tag">${w}</span>`).join("");
+    }
+    if(fBox) fBox.classList.remove("hidden");
   }
 }
-
 
 function hidePreviewWord(){ 
   const preWord = document.getElementById("previewWordDisplay");
   if(preWord) preWord.textContent = "🔒 اضغط هنا"; 
+  const fBox = document.getElementById("previewForbiddenBox");
+  if(fBox) fBox.classList.add("hidden");
 }
+
 
 function startTimer(duration, onTimeout){
   clearInterval(timerInterval);
