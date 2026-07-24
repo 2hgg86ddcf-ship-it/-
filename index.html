@@ -33,10 +33,12 @@ body {
       radial-gradient(circle at 15% 10%, rgba(244,163,0,0.06), transparent 40%),
       radial-gradient(circle at 85% 90%, rgba(230,57,70,0.07), transparent 40%);
     color:var(--off-white); font-family:'Tahoma','Segoe UI',sans-serif; min-height:100vh;
-    display:flex; align-items:center; justify-content:center; padding:18px;
+    display:flex; align-items:flex-start; justify-content:center; padding:18px;
     padding-top:calc(env(safe-area-inset-top, 0px) + 28px);
     transition: background 0.3s ease;
   }
+
+
   body.time-warning { animation: flashRed 0.6s infinite alternate; }
   @keyframes flashRed {
     0% { background-color: var(--asphalt); }
