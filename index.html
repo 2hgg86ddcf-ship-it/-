@@ -1801,8 +1801,13 @@ function show(id){
     const el = document.getElementById(s);
     if(el) el.classList.toggle("hidden", s !== id);
   });
-  window.scrollTo(0, 0);
+  requestAnimationFrame(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  });
 }
+
 
 </script>
 </body>
