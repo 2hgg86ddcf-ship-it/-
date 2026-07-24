@@ -1639,19 +1639,20 @@ function revealPreviewWord(){
 
   if(state.gameMode === "taboo" && curr.forbidden) {
     const activeForbidden = getForbiddenWords(curr);
-    const tagsHtml = activeForbidden.map(w => `<span style="background:rgba(255,255,255,0.1); color:#fff; padding:2px 8px; border-radius:6px; margin:2px; display:inline-block; font-size:0.8rem;">${w}</span>`).join("");
+    const tagsHtml = activeForbidden.map(w => `<span class="forbidden-tag">${w}</span>`).join("");
     
     preWord.innerHTML = `
-      <div style="font-size:1.2rem; font-weight:bold; margin-bottom:4px;">${curr.word}</div>
-      <div style="background:rgba(239, 68, 68, 0.12); border:1px solid rgba(239, 68, 68, 0.3); border-radius:8px; padding:4px 8px; margin-top:4px;">
-        <div style="color:#ef4444; font-size:0.75rem; font-weight:bold; margin-bottom:2px;">⚠️ ممنوع تقول هالمصطلحات:</div>
-        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:2px;">${tagsHtml}</div>
+      <div class="word" style="margin-bottom:10px;">${curr.word}</div>
+      <div class="forbidden-list" style="margin-top:0;">
+        <div class="forbidden-title">⚠️ ممنوع تقول هالمصطلحات:</div>
+        <div class="forbidden-words">${tagsHtml}</div>
       </div>
     `;
   } else {
     preWord.textContent = curr.word;
   }
 }
+
 
 function hidePreviewWord(){ 
   const preWord = document.getElementById("previewWordDisplay");
